@@ -1,0 +1,44 @@
+{
+  "name": "log-vibe",
+  "version": "1.0.0",
+  "description": "Beautiful, simple, contextual logging for the modern developer",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "keywords": [
+    "logging",
+    "logger",
+    "console",
+    "debug",
+    "pretty",
+    "color",
+    "terminal",
+    "cli",
+    "node"
+  ],
+  "author": "Dustin Ober",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^25.0.6",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  }
+}
