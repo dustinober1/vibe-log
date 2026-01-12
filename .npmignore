@@ -1,0 +1,41 @@
+# Exclude development files
+test/
+*.test.ts
+*.spec.ts
+
+# Exclude source files (dist contains compiled code)
+src/
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+
+# Exclude documentation that's not needed in package
+docs/
+.gemini/
+.agent/
+
+# Exclude git files
+.git/
+.gitignore
+
+# Exclude project planning files
+TASKS.md
+project_plan.md
+
+# Exclude development artifacts
+coverage/
+*.log
+.DS_Store
+.env
+.env.local
+
+# Exclude CI/CD files
+.github/
+
+# Keep these files
+!dist/
+!README.md
+!LICENSE
+!CHANGELOG.md
+!CONTRIBUTING.md
+!package.json

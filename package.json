@@ -1,6 +1,6 @@
 {
   "name": "log-vibe",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Beautiful, simple, contextual logging for the modern developer",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -22,6 +22,14 @@
     "test:coverage": "vitest run --coverage",
     "prepublishOnly": "npm run build && npm test"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dustinober1/vibe-log.git"
+  },
+  "homepage": "https://github.com/dustinober1/vibe-log#readme",
+  "bugs": {
+    "url": "https://github.com/dustinober1/vibe-log/issues"
+  },
   "keywords": [
     "logging",
     "logger",
@@ -36,6 +44,9 @@
   "author": "Dustin Ober",
   "license": "MIT",
   "type": "commonjs",
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "devDependencies": {
     "@types/node": "^25.0.6",
     "tsup": "^8.5.1",

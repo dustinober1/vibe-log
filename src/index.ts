@@ -17,9 +17,18 @@ export type {
 // Export main logger
 export { log, createScope } from './logger';
 
+// Export configuration
+export { configure, getConfig } from './config';
+
 // Default export for convenience
 import { log } from './logger';
 export default log;
 
-// Version constant
-export const VERSION = '1.0.0';
+// Version constant from package.json
+import packageJson from '../package.json';
+
+/**
+ * Current version of log-vibe
+ * @constant
+ */
+export const VERSION = packageJson.version;

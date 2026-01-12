@@ -4,11 +4,9 @@
 
   [![npm version](https://img.shields.io/npm/v/log-vibe.svg)](https://www.npmjs.com/package/log-vibe)
   [![npm downloads](https://img.shields.io/npm/dm/log-vibe.svg)](https://www.npmjs.com/package/log-vibe)
-  [![license](https://img.shields.io/npm/l/log-vibe.svg)](https://github.com/yourusername/log-vibe/blob/main/LICENSE)
+  [![license](https://img.shields.io/npm/l/log-vibe.svg)](https://github.com/dustinober1/vibe-log/blob/main/LICENSE)
 
   <br />
-
-  ![log-vibe demo](./docs/demo.png)
 </div>
 
 ---
@@ -40,6 +38,10 @@ log.error('API', 'Request failed', { status: 500 });
 - 🔍 **Pretty Printing** - Objects and errors are formatted beautifully
 - 📝 **TypeScript First** - Full type safety out of the box
 - ⚡ **Dual Module Support** - Works with both CommonJS and ES Modules
+- ⚙️ **Configurable** - Customize colors, timestamps, icons, and more
+- 🛡️ **Input Validation** - Prevents empty contexts and messages
+- 🔄 **Circular Reference Safe** - Handles circular objects gracefully
+- 🎯 **Log Level Filtering** - Control which logs are displayed
 
 ---
 
@@ -91,6 +93,43 @@ dbLog.success('Migration complete');
 dbLog.error('Query failed', { table: 'users' });
 ```
 
+### Configuration
+
+Customize the logger behavior:
+
+```typescript
+import { configure } from 'log-vibe';
+
+// Disable colors in CI environments
+configure({ useColors: false });
+
+// Hide timestamps
+configure({ showTimestamp: false });
+
+// Set minimum log level (only warn and error will be shown)
+configure({ level: 'warn' });
+
+// Use ISO 8601 timestamps
+configure({ timestampFormat: 'iso' });
+
+// Disable icons
+configure({ showIcons: false });
+
+// Set maximum depth for object printing
+configure({ maxDepth: 5 });
+```
+
+**Configuration Options:**
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `level` | `LogLevel` | `'debug'` | Minimum log level to display |
+| `showTimestamp` | `boolean` | `true` | Show timestamps in output |
+| `showIcons` | `boolean` | `true` | Show icons in output |
+| `useColors` | `boolean` | auto-detected | Use ANSI colors |
+| `maxDepth` | `number` | `10` | Maximum depth for object printing |
+| `timestampFormat` | `'time' \| 'iso'` | `'time'` | Timestamp format |
+
 ---
 
 ## Examples
@@ -138,6 +177,30 @@ export async function connect() {
 }
 ```
 
+### CI/CD Environment
+
+```typescript
+import { configure } from 'log-vibe';
+
+// Detect CI environment and disable colors
+if (process.env.CI) {
+  configure({ 
+    useColors: false,
+    timestampFormat: 'iso'
+  });
+}
+```
+
+---
+
+## Environment Variables
+
+log-vibe respects standard environment variables:
+
+- `NO_COLOR` - Disable colors (https://no-color.org/)
+- `FORCE_COLOR` - Force enable colors
+- `CI` - Automatically detected, disables colors unless `FORCE_COLOR` is set
+
 ---
 
 ## Contributing
@@ -146,7 +209,7 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 
 ## License
 
-MIT © [Your Name](https://github.com/yourusername)
+MIT © [Dustin Ober](https://github.com/dustinober1)
 
 ---
 

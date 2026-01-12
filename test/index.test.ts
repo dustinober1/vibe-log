@@ -4,7 +4,7 @@ import type { LogLevel, Logger, ScopedLogger } from '../src/index';
 
 describe('log-vibe exports', () => {
     it('exports VERSION', () => {
-        expect(VERSION).toBe('1.0.0');
+        expect(VERSION).toBe('0.1.0');
     });
 
     it('exports log as default', () => {

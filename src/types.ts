@@ -15,12 +15,21 @@ export interface LogEntry {
 }
 
 /**
- * Logger configuration options (for future use)
+ * Logger configuration options
  */
 export interface LoggerConfig {
+    /** Minimum log level to display */
     level?: LogLevel;
+    /** Whether to show timestamps in log output */
     showTimestamp?: boolean;
+    /** Whether to show icons in log output */
     showIcons?: boolean;
+    /** Whether to use ANSI colors (auto-detected if not specified) */
+    useColors?: boolean;
+    /** Maximum depth for object pretty-printing (prevents stack overflow) */
+    maxDepth?: number;
+    /** Timestamp format: 'time' for HH:MM:SS.mmm or 'iso' for ISO 8601 */
+    timestampFormat?: 'time' | 'iso';
 }
 
 /**

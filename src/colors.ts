@@ -31,8 +31,56 @@ export const FG_BRIGHT_CYAN = '\x1b[96m';
 export const FG_BRIGHT_WHITE = '\x1b[97m';
 
 /**
- * Helper function to wrap text in color codes
+ * Detect if the terminal supports colors
+ * Checks environment variables and TTY status
+ * 
+ * @returns true if colors are supported
  */
-export function colorize(text: string, ...codes: string[]): string {
+export function supportsColor(): boolean {
+    // Respect NO_COLOR environment variable (https://no-color.org/)
+    if ('NO_COLOR' in process.env) {
+        return false;
+    }
+
+    // Respect FORCE_COLOR environment variable
+    if ('FORCE_COLOR' in process.env) {
+        return process.env.FORCE_COLOR !== '0';
+    }
+
+    // Check if stdout is a TTY
+    if (!process.stdout.isTTY) {
+        return false;
+    }
+
+    // Check TERM environment variable
+    const term = process.env.TERM || '';
+    if (term === 'dumb') {
+        return false;
+    }
+
+    // CI environments
+    if (process.env.CI && !process.env.FORCE_COLOR) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Helper function to wrap text in color codes
+ * Only applies colors if terminal supports them
+ * 
+ * @param text - Text to colorize
+ * @param codes - ANSI color codes to apply
+ * @param forceColors - Override color detection
+ * @returns Colorized text or plain text
+ */
+export function colorize(text: string, codes: string[], forceColors?: boolean): string {
+    const shouldUseColors = forceColors ?? supportsColor();
+
+    if (!shouldUseColors) {
+        return text;
+    }
+
     return `${codes.join('')}${text}${RESET}`;
 }
