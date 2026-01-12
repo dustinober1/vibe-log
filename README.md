@@ -1,0 +1,155 @@
+<div align="center">
+  <h1>✨ log-vibe</h1>
+  <p><strong>Beautiful, simple, contextual logging for the modern developer</strong></p>
+
+  [![npm version](https://img.shields.io/npm/v/log-vibe.svg)](https://www.npmjs.com/package/log-vibe)
+  [![npm downloads](https://img.shields.io/npm/dm/log-vibe.svg)](https://www.npmjs.com/package/log-vibe)
+  [![license](https://img.shields.io/npm/l/log-vibe.svg)](https://github.com/yourusername/log-vibe/blob/main/LICENSE)
+
+  <br />
+
+  ![log-vibe demo](./docs/demo.png)
+</div>
+
+---
+
+## Quick Start
+
+```bash
+npm install log-vibe
+```
+
+```typescript
+import log from 'log-vibe';
+
+log.info('App', 'Application started');
+log.success('Database', 'Connected successfully');
+log.warn('Cache', 'Cache miss for user_123');
+log.error('API', 'Request failed', { status: 500 });
+```
+
+**Zero configuration. Zero dependencies. Just beautiful logs.**
+
+---
+
+## Features
+
+- 🎨 **Beautiful Output** - Color-coded levels with icons and timestamps
+- 📦 **Zero Dependencies** - Lightweight and fast
+- 🏷️ **Contextual Logging** - Add context to every log message
+- 🔍 **Pretty Printing** - Objects and errors are formatted beautifully
+- 📝 **TypeScript First** - Full type safety out of the box
+- ⚡ **Dual Module Support** - Works with both CommonJS and ES Modules
+
+---
+
+## API
+
+### Log Levels
+
+| Method | Description | Use Case |
+|--------|-------------|----------|
+| `log.debug()` | Debug information | Development debugging |
+| `log.info()` | General information | Application flow |
+| `log.success()` | Success messages | Completed operations |
+| `log.warn()` | Warnings | Potential issues |
+| `log.error()` | Errors | Failures and exceptions |
+
+### Basic Usage
+
+```typescript
+import log from 'log-vibe';
+
+// Simple logging
+log.info('Context', 'Your message here');
+
+// With additional data
+log.debug('Database', 'Query executed', { 
+  query: 'SELECT * FROM users',
+  duration: '45ms'
+});
+
+// Logging errors
+try {
+  throw new Error('Something went wrong');
+} catch (error) {
+  log.error('Handler', 'Failed to process request', error);
+}
+```
+
+### Scoped Logging
+
+Create a logger with a pre-bound context:
+
+```typescript
+import { createScope } from 'log-vibe';
+
+const dbLog = createScope('Database');
+
+dbLog.info('Connection established');
+dbLog.success('Migration complete');
+dbLog.error('Query failed', { table: 'users' });
+```
+
+---
+
+## Examples
+
+### Express Middleware
+
+```typescript
+import log from 'log-vibe';
+
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const level = res.statusCode >= 400 ? 'error' : 'info';
+    
+    log[level]('HTTP', `${req.method} ${req.path}`, {
+      status: res.statusCode,
+      duration: `${duration}ms`
+    });
+  });
+  
+  next();
+});
+```
+
+### Module-Scoped Loggers
+
+```typescript
+// services/database.ts
+import { createScope } from 'log-vibe';
+
+const log = createScope('Database');
+
+export async function connect() {
+  log.info('Connecting to database...');
+  
+  try {
+    await db.connect();
+    log.success('Connected!');
+  } catch (error) {
+    log.error('Connection failed', error);
+    throw error;
+  }
+}
+```
+
+---
+
+## Contributing
+
+Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
+
+## License
+
+MIT © [Your Name](https://github.com/yourusername)
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ for developers who appreciate beautiful logs</sub>
+</div>
