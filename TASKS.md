@@ -1153,7 +1153,297 @@
 
 ### 2.1 Create README.md
 
-- [ ] **Task 2.1.1: Create README header section**
+- [x] **Task 2.1.1: Create README header section**
+  - Create/update `README.md` with:
+    ```markdown
+    <div align="center">
+      <h1>✨ log-vibe</h1>
+      <p><strong>Beautiful, simple, contextual logging for the modern developer</strong></p>
+
+      [![npm version](https://img.shields.io/npm/v/log-vibe.svg)](https://www.npmjs.com/package/log-vibe)
+      [![npm downloads](https://img.shields.io/npm/dm/log-vibe.svg)](https://www.npmjs.com/package/log-vibe)
+      [![license](https://img.shields.io/npm/l/log-vibe.svg)](https://github.com/yourusername/log-vibe/blob/main/LICENSE)
+
+      <br />
+
+      ![log-vibe demo](./docs/demo.png)
+    </div>
+
+    ---
+    ```
+  - Verify: Markdown renders correctly
+
+- [x] **Task 2.1.2: Add quick start section**
+  - Append to `README.md`:
+    ```markdown
+    ## Quick Start
+
+    ```bash
+    npm install log-vibe
+    ```
+
+    ```typescript
+    import log from 'log-vibe';
+
+    log.info('App', 'Application started');
+    log.success('Database', 'Connected successfully');
+    log.warn('Cache', 'Cache miss for user_123');
+    log.error('API', 'Request failed', { status: 500 });
+    ```
+
+    **Zero configuration. Zero dependencies. Just beautiful logs.**
+
+    ---
+    ```
+  - Verify: Markdown renders correctly
+
+- [x] **Task 2.1.3: Add features section**
+  - Append to `README.md`:
+    ```markdown
+    ## Features
+
+    - 🎨 **Beautiful Output** - Color-coded levels with icons and timestamps
+    - 📦 **Zero Dependencies** - Lightweight and fast
+    - 🏷️ **Contextual Logging** - Add context to every log message
+    - 🔍 **Pretty Printing** - Objects and errors are formatted beautifully
+    - 📝 **TypeScript First** - Full type safety out of the box
+    - ⚡ **Dual Module Support** - Works with both CommonJS and ES Modules
+
+    ---
+    ```
+  - Verify: Markdown renders correctly
+
+- [x] **Task 2.1.4: Add API documentation**
+  - Append to `README.md`:
+    ```markdown
+    ## API
+
+    ### Log Levels
+
+    | Method | Description | Use Case |
+    |--------|-------------|----------|
+    | `log.debug()` | Debug information | Development debugging |
+    | `log.info()` | General information | Application flow |
+    | `log.success()` | Success messages | Completed operations |
+    | `log.warn()` | Warnings | Potential issues |
+    | `log.error()` | Errors | Failures and exceptions |
+
+    ### Basic Usage
+
+    ```typescript
+    import log from 'log-vibe';
+
+    // Simple logging
+    log.info('Context', 'Your message here');
+
+    // With additional data
+    log.debug('Database', 'Query executed', { 
+      query: 'SELECT * FROM users',
+      duration: '45ms'
+    });
+
+    // Logging errors
+    try {
+      throw new Error('Something went wrong');
+    } catch (error) {
+      log.error('Handler', 'Failed to process request', error);
+    }
+    ```
+
+    ### Scoped Logging
+
+    Create a logger with a pre-bound context:
+
+    ```typescript
+    import { createScope } from 'log-vibe';
+
+    const dbLog = createScope('Database');
+
+    dbLog.info('Connection established');
+    dbLog.success('Migration complete');
+    dbLog.error('Query failed', { table: 'users' });
+    ```
+
+    ---
+    ```
+  - Verify: Markdown renders correctly
+
+- [x] **Task 2.1.5: Add examples section**
+  - Append to `README.md`:
+    ```markdown
+    ## Examples
+
+    ### Express Middleware
+
+    ```typescript
+    import log from 'log-vibe';
+
+    app.use((req, res, next) => {
+      const start = Date.now();
+      
+      res.on('finish', () => {
+        const duration = Date.now() - start;
+        const level = res.statusCode >= 400 ? 'error' : 'info';
+        
+        log[level]('HTTP', `${req.method} ${req.path}`, {
+          status: res.statusCode,
+          duration: `${duration}ms`
+        });
+      });
+      
+      next();
+    });
+    ```
+
+    ### Module-Scoped Loggers
+
+    ```typescript
+    // services/database.ts
+    import { createScope } from 'log-vibe';
+
+    const log = createScope('Database');
+
+    export async function connect() {
+      log.info('Connecting to database...');
+      
+      try {
+        await db.connect();
+        log.success('Connected!');
+      } catch (error) {
+        log.error('Connection failed', error);
+        throw error;
+      }
+    }
+    ```
+
+    ---
+    ```
+  - Verify: Markdown renders correctly
+
+- [x] **Task 2.1.6: Add contributing and license sections**
+  - Append to `README.md`:
+    ```markdown
+    ## Contributing
+
+    Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) for details.
+
+    ## License
+
+    MIT © [Your Name](https://github.com/yourusername)
+
+    ---
+
+    <div align="center">
+      <sub>Built with ❤️ for developers who appreciate beautiful logs</sub>
+    </div>
+    ```
+  - Verify: Markdown renders correctly
+
+---
+
+### 2.2 Create Demo Screenshot
+
+- [x] **Task 2.2.1: Create docs directory**
+  - Run: `mkdir -p docs`
+  - Verify: `docs` directory exists
+
+- [x] **Task 2.2.2: Create a demo script**
+  - Create file `docs/demo.ts`:
+    ```typescript
+    import log, { createScope } from '../src/index';
+
+    console.log('\n--- log-vibe Demo ---\n');
+
+    log.info('App', 'Application starting...');
+    log.debug('Config', 'Loading configuration', { env: 'production' });
+    log.success('Database', 'Connected to PostgreSQL');
+    log.info('Server', 'Listening on port 3000');
+    log.warn('Cache', 'Redis connection slow', { latency: '150ms' });
+    log.error('API', 'External service unavailable', new Error('ECONNREFUSED'));
+
+    console.log('\n--- Scoped Logger ---\n');
+
+    const dbLog = createScope('Database');
+    dbLog.info('Executing query...');
+    dbLog.success('Query completed', { rows: 42, duration: '12ms' });
+
+    console.log('\n--- End Demo ---\n');
+    ```
+  - Verify: File exists
+
+- [x] **Task 2.2.3: Run demo and capture screenshot**
+  - Run: `npx tsx docs/demo.ts`
+  - Take a screenshot of the terminal output
+  - Save as `docs/demo.png`
+  - Verify: Screenshot looks good and shows colorful output
+
+---
+
+### 2.3 Create CONTRIBUTING.md
+
+- [x] **Task 2.3.1: Create contributing guide**
+  - Create file `CONTRIBUTING.md`:
+    ```markdown
+    # Contributing to log-vibe
+
+    Thank you for your interest in contributing! 🎉
+
+    ## Development Setup
+
+    1. Fork and clone the repository
+    2. Install dependencies: `npm install`
+    3. Run tests: `npm test`
+    4. Build: `npm run build`
+
+    ## Making Changes
+
+    1. Create a new branch: `git checkout -b feature/your-feature`
+    2. Make your changes
+    3. Run tests: `npm test`
+    4. Commit with a clear message: `git commit -m "feat: add new feature"`
+    5. Push and create a Pull Request
+
+    ## Commit Messages
+
+    We follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+    - `feat:` - New features
+    - `fix:` - Bug fixes
+    - `docs:` - Documentation changes
+    - `test:` - Test additions or changes
+    - `chore:` - Maintenance tasks
+
+    ## Code Style
+
+    - Use TypeScript
+    - Follow existing code patterns
+    - Write tests for new features
+    - Keep the zero-dependency philosophy
+
+    ## Questions?
+
+    Open an issue or start a discussion!
+    ```
+  - Verify: File exists
+
+---
+
+### 2.4 Add Prepublish Script
+
+- [x] **Task 2.4.1: Add prepublishOnly script**
+  - Open `package.json`
+  - Add to `"scripts"`:
+    ```json
+    "prepublishOnly": "npm run build && npm test"
+    ```
+  - Verify: Script is added
+
+- [x] **Task 2.4.2: Test the prepublish workflow**
+  - Run: `npm pack --dry-run`
+  - Verify: Shows the files that would be included in the package
+  - Verify: Only `dist/` folder files are included (not `src/`, `test/`, etc.)
+
+- [x] **Task 2.4.3: Commit documentation**
   - Create/update `README.md` with:
     ```markdown
     <div align="center">
