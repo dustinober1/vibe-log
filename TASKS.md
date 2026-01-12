@@ -9,16 +9,16 @@
 
 ### 0.1 Initialize the Repository
 
-- [ ] **Task 0.1.1: Create project directory**
+- [x] **Task 0.1.1: Create project directory**
   - Open terminal
   - Run: `mkdir log-vibe && cd log-vibe`
   - Verify: Directory exists and you're inside it
 
-- [ ] **Task 0.1.2: Initialize Git repository**
+- [x] **Task 0.1.2: Initialize Git repository**
   - Run: `git init`
   - Verify: `.git` folder exists (use `ls -la` to see hidden folders)
 
-- [ ] **Task 0.1.3: Create .gitignore file**
+- [x] **Task 0.1.3: Create .gitignore file**
   - Create file `.gitignore` in project root
   - Add these contents:
     ```
@@ -32,12 +32,12 @@
     ```
   - Verify: File exists with correct contents
 
-- [ ] **Task 0.1.4: Initialize npm package**
+- [x] **Task 0.1.4: Initialize npm package**
   - Run: `npm init -y`
   - Verify: `package.json` file is created
   - Open `package.json` and verify `name` is `"log-vibe"`
 
-- [ ] **Task 0.1.5: Create MIT License file**
+- [x] **Task 0.1.5: Create MIT License file**
   - Create file `LICENSE` in project root
   - Copy MIT License text from https://opensource.org/licenses/MIT
   - Replace `[year]` with current year (2026)
@@ -48,15 +48,15 @@
 
 ### 0.2 Set Up TypeScript
 
-- [ ] **Task 0.2.1: Install TypeScript as dev dependency**
+- [x] **Task 0.2.1: Install TypeScript as dev dependency**
   - Run: `npm install --save-dev typescript`
   - Verify: Check `package.json` has `typescript` in `devDependencies`
 
-- [ ] **Task 0.2.2: Install Node.js type definitions**
+- [x] **Task 0.2.2: Install Node.js type definitions**
   - Run: `npm install --save-dev @types/node`
   - Verify: Check `package.json` has `@types/node` in `devDependencies`
 
-- [ ] **Task 0.2.3: Create TypeScript configuration file**
+- [x] **Task 0.2.3: Create TypeScript configuration file**
   - Create file `tsconfig.json` in project root
   - Add this configuration:
     ```json
@@ -92,11 +92,11 @@
 
 ### 0.3 Set Up Build Tool (tsup)
 
-- [ ] **Task 0.3.1: Install tsup as dev dependency**
+- [x] **Task 0.3.1: Install tsup as dev dependency**
   - Run: `npm install --save-dev tsup`
   - Verify: Check `package.json` has `tsup` in `devDependencies`
 
-- [ ] **Task 0.3.2: Create tsup configuration file**
+- [x] **Task 0.3.2: Create tsup configuration file**
   - Create file `tsup.config.ts` in project root
   - Add this configuration:
     ```typescript
@@ -115,7 +115,7 @@
     ```
   - Verify: File exists with correct contents
 
-- [ ] **Task 0.3.3: Add build script to package.json**
+- [x] **Task 0.3.3: Add build script to package.json**
   - Open `package.json`
   - Find the `"scripts"` section
   - Add: `"build": "tsup"`
@@ -125,11 +125,11 @@
 
 ### 0.4 Set Up Testing (Vitest)
 
-- [ ] **Task 0.4.1: Install Vitest as dev dependency**
+- [x] **Task 0.4.1: Install Vitest as dev dependency**
   - Run: `npm install --save-dev vitest`
   - Verify: Check `package.json` has `vitest` in `devDependencies`
 
-- [ ] **Task 0.4.2: Create Vitest configuration file**
+- [x] **Task 0.4.2: Create Vitest configuration file**
   - Create file `vitest.config.ts` in project root
   - Add this configuration:
     ```typescript
@@ -151,7 +151,7 @@
     ```
   - Verify: File exists with correct contents
 
-- [ ] **Task 0.4.3: Add test scripts to package.json**
+- [x] **Task 0.4.3: Add test scripts to package.json**
   - Open `package.json`
   - Add these to the `"scripts"` section:
     ```json
@@ -165,15 +165,15 @@
 
 ### 0.5 Create Project Structure
 
-- [ ] **Task 0.5.1: Create source directory**
+- [x] **Task 0.5.1: Create source directory**
   - Run: `mkdir src`
   - Verify: `src` directory exists
 
-- [ ] **Task 0.5.2: Create test directory**
+- [x] **Task 0.5.2: Create test directory**
   - Run: `mkdir test`
   - Verify: `test` directory exists
 
-- [ ] **Task 0.5.3: Create placeholder index file**
+- [x] **Task 0.5.3: Create placeholder index file**
   - Create file `src/index.ts`
   - Add placeholder content:
     ```typescript
@@ -182,7 +182,7 @@
     ```
   - Verify: File exists and TypeScript compiles (`npx tsc --noEmit`)
 
-- [ ] **Task 0.5.4: Create placeholder test file**
+- [x] **Task 0.5.4: Create placeholder test file**
   - Create file `test/index.test.ts`
   - Add placeholder content:
     ```typescript
@@ -197,7 +197,7 @@
     ```
   - Verify: Run `npm test` and test passes
 
-- [ ] **Task 0.5.5: Test the build process**
+- [x] **Task 0.5.5: Test the build process**
   - Run: `npm run build`
   - Verify: `dist` folder is created with:
     - `index.js` (CommonJS)
@@ -208,7 +208,7 @@
 
 ### 0.6 Configure package.json for npm Publishing
 
-- [ ] **Task 0.6.1: Update package.json with npm metadata**
+- [x] **Task 0.6.1: Update package.json with npm metadata**
   - Open `package.json`
   - Update/add these fields:
     ```json
@@ -257,7 +257,7 @@
     ```
   - Verify: `npm pack --dry-run` shows only the expected files
 
-- [ ] **Task 0.6.2: Verify zero production dependencies**
+- [x] **Task 0.6.2: Verify zero production dependencies**
   - Open `package.json`
   - Ensure there is NO `"dependencies"` field (only `"devDependencies"`)
   - This is **critical** - log-vibe must have zero runtime dependencies
@@ -267,11 +267,11 @@
 
 ### 0.7 Initial Git Commit
 
-- [ ] **Task 0.7.1: Stage all files**
+- [x] **Task 0.7.1: Stage all files**
   - Run: `git add .`
   - Verify: Run `git status` shows all new files staged
 
-- [ ] **Task 0.7.2: Create initial commit**
+- [x] **Task 0.7.2: Create initial commit**
   - Run: `git commit -m "chore: initial project setup"`
   - Verify: `git log` shows the commit
 
