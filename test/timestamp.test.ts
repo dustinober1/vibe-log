@@ -1,7 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { formatTimestamp } from '../src/timestamp';
+import { configure, resetConfig } from '../src/config';
 
 describe('formatTimestamp', () => {
+    beforeEach(() => {
+        resetConfig();
+    });
+
     it('should format timestamp correctly', () => {
         const date = new Date('2024-01-15T10:05:03.042Z');
         const result = formatTimestamp(date);
@@ -25,4 +30,14 @@ describe('formatTimestamp', () => {
         const result = formatTimestamp(date);
         expect(result).toContain('01:02:03.004');
     });
+
+    it('should format timestamp in ISO format when configured', () => {
+        configure({ timestampFormat: 'iso' });
+
+        const date = new Date('2024-01-15T10:05:03.042Z');
+        const result = formatTimestamp(date);
+
+        expect(result).toContain('2024-01-15T10:05:03.042Z');
+    });
 });
+

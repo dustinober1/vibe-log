@@ -11,6 +11,13 @@ A beautiful, zero-dependency TypeScript logging library for Node.js.
 
 ## Recent Changes (2026-01-12)
 
+### Test Coverage Enhancement ✨
+Achieved comprehensive test coverage:
+- **Coverage**: 99.41% statements, 93.2% branches, 100% functions, 99.4% lines
+- **Tests**: 91 passing (up from 31)
+- **New test files**: `config.test.ts`, `icons.test.ts`, `types.test.ts`
+- **Enhanced files**: All existing test files improved with edge cases and validation
+
 ### Audit Fixes Completed
 Fixed all 21 issues identified in comprehensive code audit:
 
@@ -26,7 +33,7 @@ Fixed all 21 issues identified in comprehensive code audit:
 - ✅ Added input validation for context/message
 - ✅ Added comprehensive JSDoc to public API
 - ✅ Updated README with repository URLs and configuration docs
-- ✅ Enhanced test coverage (31 tests passing)
+- ✅ Enhanced test coverage (91 tests passing)
 
 **Medium Priority (8)**:
 - ✅ Fixed string concatenation performance in formatter
@@ -103,7 +110,8 @@ configure({
 - **CJS**: 12.23 KB
 - **ESM**: 11.12 KB
 - **Types**: 3.39 KB
-- **Tests**: 31 passing
+- **Tests**: 91 passing
+- **Coverage**: 99.41% statements, 93.2% branches
 
 ## Features
 
@@ -119,3 +127,4 @@ configure({
 - ✅ Pretty printing for objects/arrays/errors
 - ✅ Environment variable support (NO_COLOR, FORCE_COLOR, CI)
 - ✅ ASCII fallback for non-Unicode terminals
+- ✅ Comprehensive test coverage (99.41%)

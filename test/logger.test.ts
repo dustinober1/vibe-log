@@ -1,8 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { log, createScope } from '../src/logger';
+import { configure, resetConfig } from '../src/config';
 
 describe('log', () => {
     beforeEach(() => {
+        resetConfig();
         // Mock console methods
         vi.spyOn(console, 'log').mockImplementation(() => { });
         vi.spyOn(console, 'debug').mockImplementation(() => { });
@@ -52,10 +54,76 @@ describe('log', () => {
         const call = vi.mocked(console.log).mock.calls[0][0];
         expect(call).toContain('My test message');
     });
+
+    describe('validation', () => {
+        it('should throw error for empty context', () => {
+            expect(() => log.info('', 'Message')).toThrow('Context cannot be empty or whitespace');
+        });
+
+        it('should throw error for whitespace-only context', () => {
+            expect(() => log.info('   ', 'Message')).toThrow('Context cannot be empty or whitespace');
+        });
+
+        it('should throw error for empty message', () => {
+            expect(() => log.info('Context', '')).toThrow('Message cannot be empty or whitespace');
+        });
+
+        it('should throw error for whitespace-only message', () => {
+            expect(() => log.info('Context', '   ')).toThrow('Message cannot be empty or whitespace');
+        });
+    });
+
+    describe('log level filtering', () => {
+        it('should filter logs below configured level (warn)', () => {
+            configure({ level: 'warn' });
+
+            log.debug('Test', 'Debug');
+            log.info('Test', 'Info');
+            log.success('Test', 'Success');
+            log.warn('Test', 'Warning');
+            log.error('Test', 'Error');
+
+            expect(console.debug).toHaveBeenCalledTimes(0);
+            expect(console.log).toHaveBeenCalledTimes(0);
+            expect(console.warn).toHaveBeenCalledTimes(1);
+            expect(console.error).toHaveBeenCalledTimes(1);
+        });
+
+        it('should filter logs below configured level (error)', () => {
+            configure({ level: 'error' });
+
+            log.debug('Test', 'Debug');
+            log.info('Test', 'Info');
+            log.success('Test', 'Success');
+            log.warn('Test', 'Warning');
+            log.error('Test', 'Error');
+
+            expect(console.debug).toHaveBeenCalledTimes(0);
+            expect(console.log).toHaveBeenCalledTimes(0);
+            expect(console.warn).toHaveBeenCalledTimes(0);
+            expect(console.error).toHaveBeenCalledTimes(1);
+        });
+
+        it('should allow all logs when level is debug', () => {
+            configure({ level: 'debug' });
+
+            log.debug('Test', 'Debug');
+            log.info('Test', 'Info');
+            log.success('Test', 'Success');
+            log.warn('Test', 'Warning');
+            log.error('Test', 'Error');
+
+            expect(console.debug).toHaveBeenCalledTimes(1);
+            expect(console.log).toHaveBeenCalledTimes(2); // info + success
+            expect(console.warn).toHaveBeenCalledTimes(1);
+            expect(console.error).toHaveBeenCalledTimes(1);
+        });
+    });
 });
 
 describe('createScope', () => {
     beforeEach(() => {
+        resetConfig();
         vi.spyOn(console, 'log').mockImplementation(() => { });
         vi.spyOn(console, 'debug').mockImplementation(() => { });
         vi.spyOn(console, 'warn').mockImplementation(() => { });
@@ -101,3 +169,4 @@ describe('createScope', () => {
         expect(call).toContain('John');
     });
 });
+
