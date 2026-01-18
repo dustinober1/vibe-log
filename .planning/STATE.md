@@ -285,15 +285,15 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 06-02: Fix integration test isolation
 - [x] Plan 06-03: Add edge case hardening for production scenarios
 - [x] Plan 06-04: Create troubleshooting documentation
+- [x] Plan 06-05: Create monitoring documentation
 
 **Upcoming:**
-- [ ] Plan 06-05: Create monitoring documentation
 - [ ] Plan 06-06: Add deployment examples
 - [ ] v1.1 release preparation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 5/6 phases complete (83%), Phase 6: 4/6 plans complete
+**v1.1 Log Rotation Milestone:** 5/6 phases complete (83%), Phase 6: 5/6 plans complete
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
@@ -302,3 +302,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 4 | Async Compression | 5/5 | Complete |
 | 5 | Retention Cleanup | 5/5 | Complete |
 | 6 | Error Handling & Production Hardening | 4/6 | In progress |
+| 2026-01-18 | Monitoring documentation with health check patterns | Health check endpoint example demonstrates status tracking with error state management |
+| 2026-01-18 | Alert levels table with severity-based actions | Info (rotation), Warning (80% disk), Critical (90% disk, ENOSPC, EACCES) |
+| 2026-01-18 | Integration examples for common monitoring systems | Slack webhooks, email via nodemailer, Prometheus Pushgateway |
+| 2026-01-18 | Shell script examples for health monitoring | Bash scripts for environments without Node.js runtime |
+| 2026-01-18 | Metrics dashboard pattern with Express endpoint | Real-time metrics exposure via /metrics endpoint with error and rotation tracking |
+| 2026-01-18 | Cross-reference to TROUBLESHOOTING.md | Comprehensive coverage linking monitoring to troubleshooting workflows |
