@@ -42,6 +42,166 @@ log.error('API', 'Request failed', { status: 500 });
 - 🛡️ **Input Validation** - Prevents empty contexts and messages
 - 🔄 **Circular Reference Safe** - Handles circular objects gracefully
 - 🎯 **Log Level Filtering** - Control which logs are displayed
+- 🚀 **Transport System** - Flexible log routing to console, files, or custom destinations
+
+---
+
+## Transports
+
+log-vibe supports multiple transports for flexible log output. Logs can be written to the console, files, or custom destinations.
+
+### Default Behavior
+
+By default, logs are written to the console:
+
+```typescript
+import log from 'log-vibe';
+
+log.info('App', 'Started');  // Outputs to console
+```
+
+### File Logging
+
+**Quick setup** (recommended for simple cases):
+
+```typescript
+import { configure } from 'log-vibe';
+
+configure({ file: './app.log' });
+
+import log from 'log-vibe';
+log.info('App', 'Now writing to file');
+```
+
+This creates a `FileTransport` instance and configures it automatically.
+
+**Multiple files**:
+
+```typescript
+import { configure, FileTransport } from 'log-vibe';
+
+configure({
+  transports: [
+    new FileTransport('./app.log'),
+    new FileTransport('./errors.log'),  // Could filter by level in Phase 2
+  ]
+});
+```
+
+### Console Output
+
+Console is enabled by default. To disable:
+
+```typescript
+import { configure } from 'log-vibe';
+
+configure({ console: false });
+
+// File-only logging
+configure({
+  file: './app.log',
+  console: false,
+});
+```
+
+### Custom Transports
+
+Create custom transports by implementing the `Transport` interface:
+
+```typescript
+import type { Transport } from 'log-vibe';
+
+class SlackTransport implements Transport {
+  log(formatted: string, entry: LogEntry): void {
+    if (entry.level === 'error') {
+      // Send to Slack webhook
+      fetch('https://hooks.slack.com/...', {
+        method: 'POST',
+        body: JSON.stringify({ text: formatted }),
+      }).catch(() => {});  // Don't throw
+    }
+  }
+}
+
+// Use with log-vibe
+import { configure, FileTransport } from 'log-vibe';
+
+configure({
+  transports: [
+    new FileTransport('./app.log'),
+    new SlackTransport(),
+  ]
+});
+```
+
+### Transport Interface
+
+```typescript
+interface Transport {
+  /**
+   * Write a log entry
+   * @param formatted - Formatted string (with colors, icons, etc.)
+   * @param entry - Raw log entry for custom processing
+   * @param config - Logger configuration
+   */
+  log(formatted: string, entry: LogEntry, config: LoggerConfig): void;
+
+  /**
+   * Optional cleanup for releasing resources
+   * @returns Promise that resolves when cleanup is complete
+   */
+  close?(): Promise<void> | void;
+}
+```
+
+**Key points**:
+- `log()` must be **synchronous** (handle async internally if needed)
+- `log()` must **not throw** (catch errors and handle gracefully)
+- `close()` is optional (only for transports with resources)
+- You receive both formatted string and raw entry for maximum flexibility
+
+### Cleanup
+
+Close transports to release resources (file handles, connections, etc.):
+
+```typescript
+import { configure, FileTransport } from 'log-vibe';
+import log from 'log-vibe';
+
+const fileTransport = new FileTransport('./app.log');
+configure({ transports: [fileTransport] });
+
+log.info('App', 'Started');
+
+// On shutdown
+await fileTransport.close();
+```
+
+For console transport, `close()` is a no-op (no resources to release).
+
+### Migration Guide
+
+**Existing code continues to work** without changes:
+
+```typescript
+import log from 'log-vibe';
+
+// This still works exactly as before
+log.info('App', 'Started');
+log.success('Database', 'Connected');
+```
+
+To add file logging:
+
+```typescript
+import { configure } from 'log-vibe';
+
+// Just add this line
+configure({ file: './app.log' });
+
+// Everything else stays the same
+log.info('App', 'Now also writing to file');
+```
 
 ---
 
@@ -129,6 +289,9 @@ configure({ maxDepth: 5 });
 | `useColors` | `boolean` | auto-detected | Use ANSI colors |
 | `maxDepth` | `number` | `10` | Maximum depth for object printing |
 | `timestampFormat` | `'time' \| 'iso'` | `'time'` | Timestamp format |
+| `file` | `string` | `undefined` | Path to log file (creates FileTransport) |
+| `console` | `boolean` | `true` | Enable console transport |
+| `transports` | `Transport[]` | `[ConsoleTransport]` | Custom transport instances |
 
 ---
 
