@@ -29,7 +29,7 @@ function writeLog(
 
     // Check if this level should be logged
     const config = getConfig();
-    if (!shouldLog(level, config.level)) {
+    if (!shouldLog(level, config.level ?? 'debug')) {
         return;
     }
 

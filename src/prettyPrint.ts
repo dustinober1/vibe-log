@@ -21,7 +21,7 @@ export function prettyPrint(
     const useColors = config.useColors;
 
     // Check depth limit to prevent stack overflow
-    if (depth > config.maxDepth) {
+    if (depth > (config.maxDepth ?? 10)) {
         return colorize('[Max Depth Reached]', [DIM], useColors);
     }
 
