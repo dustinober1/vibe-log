@@ -4,8 +4,8 @@ import { getConfig } from './config';
 import { shouldLog } from './levels';
 
 /**
- * Create a log entry and output it to console
- * 
+ * Create a log entry and output it to all configured transports
+ *
  * @param level - The log level
  * @param context - The context/module name
  * @param message - The log message
@@ -43,19 +43,17 @@ function writeLog(
 
     const formatted = formatLogEntry(entry);
 
-    // Use appropriate console method for each level
-    switch (level) {
-        case 'error':
-            console.error(formatted);
-            break;
-        case 'warn':
-            console.warn(formatted);
-            break;
-        case 'debug':
-            console.debug(formatted);
-            break;
-        default:
-            console.log(formatted);
+    // Write to all configured transports
+    const transports = config.transports || [];
+    for (const transport of transports) {
+        try {
+            transport.log(formatted, entry, config);
+        } catch (error) {
+            // Transport failed - log to stderr as fallback
+            // Don't let transport failures crash the application
+            const err = error as Error;
+            console.error(`[log-vibe] Transport error: ${err.message}`);
+        }
     }
 }
 
