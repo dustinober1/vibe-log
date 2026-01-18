@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T19:28:21Z
+**Last Updated:** 2026-01-18T19:31:56Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 3 - Time-based Rotation
-**Plan:** 01 of 5
+**Plan:** 02 of 5
 **Status:** In progress
-**Last activity:** 2026-01-18 — Completed 03-01-PLAN.md (Time-based rotation configuration)
+**Last activity:** 2026-01-18 — Completed 03-02-PLAN.md (Timer-based daily rotation)
 
-**Progress:** ██████████░░░░░░░░ 35% (2.2/6 phases complete: Phases 1-2 complete, Phase 3 plan 1 of 5)
+**Progress:** ██████████░░░░░░░░ 38% (2.3/6 phases complete: Phases 1-2 complete, Phase 3 plan 2 of 5)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T19:28:21Z
-**Stopped at:** Completed 03-01-PLAN.md (Time-based rotation configuration)
+**Last session:** 2026-01-18T19:31:56Z
+**Stopped at:** Completed 03-02-PLAN.md (Timer-based daily rotation)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,9 +44,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Begin Phase 3: Time-based rotation with midnight scheduling
-- Implement time-based rotation triggers (daily at midnight)
-- Add rotation scheduling infrastructure
+- Complete Phase 3: Time-based rotation with midnight scheduling
+- Implement hybrid rotation logic (size OR time triggers)
+- Add integration tests for time-based rotation
 
 ## Decisions Made
 
@@ -87,6 +87,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | UTC midnight for daily rotation | Use Date.UTC() and getUTC*() methods to avoid DST and timezone issues |
 | 2026-01-18 | Optional pattern field in RotationConfig | Maintain backward compatibility - pattern is opt-in |
 | 2026-01-18 | Hybrid rotation support | pattern and maxSize can be combined for time OR size-based triggers |
+| 2026-01-18 | Recursive setTimeout for daily rotation | Prevents timing drift that accumulates with setInterval |
+| 2026-01-18 | Force rotation parameter for triggers | Distinguishes size-based (false) from time-based (true) rotation |
+| 2026-01-18 | Timer cleanup in close() method | Clear timers before stream cleanup to prevent memory leaks |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -123,6 +126,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Size checking with fs.promises.stat() for accurate file size
 - Rotation deduplication via rotationInProgress promise tracking
 - UTC-based time calculations: Use Date.UTC() and getUTC*() methods for timezone-independent scheduling
+- Recursive setTimeout scheduling: Each timeout recalculates delay to prevent timing drift
+- Timer cleanup in disposal: Clear timers in close() before releasing resources
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -149,9 +154,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Add rotation documentation to README
 - [x] Plan 03-01: Extend RotationConfig with pattern field
 - [x] Plan 03-01: Create getMsUntilNextMidnightUTC utility function
+- [x] Plan 03-02: Add timer state and import getMsUntilNextMidnightUTC
+- [x] Plan 03-02: Implement scheduleMidnightRotation method
+- [x] Plan 03-02: Implement clearRotationTimer and integrate into close()
 
 **Upcoming:**
-- [ ] Plan 03-02: Integrate time-based rotation into FileTransport
 - [ ] Plan 03-03: Add timer-based rotation triggers
 - [ ] Plan 03-04: Implement hybrid rotation logic (size + time)
 - [ ] Plan 03-05: Add tests and documentation for time-based rotation
@@ -161,12 +168,12 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 2.2/5 phases complete (44%)
+**v1.1 Log Rotation Milestone:** 2.3/5 phases complete (46%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
-| 3 | Time-based Rotation | 1/5 | In progress |
+| 3 | Time-based Rotation | 2/5 | In progress |
 | 4 | Async Compression | 0/5 | Planned |
 | 5 | Retention Cleanup | 0/5 | Planned |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
