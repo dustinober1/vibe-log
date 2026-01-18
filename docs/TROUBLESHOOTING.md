@@ -189,3 +189,51 @@ chmod 755 /path/to/logs
 
 **Handle in application:**
 log-vibe will attempt to recreate the directory if it's deleted during rotation. Monitor for `error` events.
+
+## Multi-Process Limitations
+
+### Symptoms
+
+- Log entries missing or corrupted
+- Rotation fails intermittently
+- Sequence numbers collide in rotated files
+
+### Cause
+
+log-vibe does NOT support multi-process writing to the same log file. Multiple processes writing to the same file can cause:
+- Data corruption
+- Lost log entries
+- Rotation failures
+- Race conditions
+
+### Solutions
+
+**Use separate log files per process:**
+```typescript
+// Process 1
+configure({ file: './logs/app-1.log' });
+
+// Process 2
+configure({ file: './logs/app-2.log' });
+```
+
+**Use process ID in filename:**
+```typescript
+configure({
+  file: `./logs/app-${process.pid}.log`
+});
+```
+
+**Use a logging server (recommended for production):**
+- Run a dedicated logging process
+- Other processes send logs via IPC/network
+- Centralized logger writes to disk safely
+
+**Alternative: Use syslog:**
+```typescript
+import { configure, SyslogTransport } from 'log-vibe';
+
+configure({
+  transports: [new SyslogTransport()]
+});
+```
