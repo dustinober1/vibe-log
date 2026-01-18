@@ -66,29 +66,52 @@ function parseSize(size: string | number): number {
  * Uses Node.js streams for efficient async file writing.
  * Creates parent directories automatically if they don't exist.
  */
+
+/**
+ * Options for FileTransport
+ */
+interface FileTransportOptions {
+    /** Maximum file size before rotation (e.g., '100MB', 104857600) */
+    maxSize?: string | number;
+}
+
 export class FileTransport implements Transport {
     private stream: fs.WriteStream;
     private readonly filePath: string;
     private closed = false;
+    private maxSize?: number;
+    private rotationEnabled = false;
 
     /**
      * Create a new file transport
      *
      * @param filePath - Path to the log file (relative or absolute)
+     * @param options - Rotation options (optional, for future use)
      *
      * @throws {Error} If filePath is empty or only whitespace
+     * @throws {Error} If rotation config has invalid size format
      *
      * @example
      * ```typescript
+     * // Basic file logging (no rotation)
      * const transport = new FileTransport('./logs/app.log');
+     *
+     * // With rotation (future implementation)
+     * const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
      * ```
      */
-    constructor(filePath: string) {
+    constructor(filePath: string, options?: FileTransportOptions) {
         if (!filePath || !filePath.trim()) {
             throw new Error('File path cannot be empty or whitespace');
         }
 
         this.filePath = filePath;
+
+        // Parse rotation config if provided
+        if (options?.maxSize) {
+            this.maxSize = parseSize(options.maxSize);
+            this.rotationEnabled = true;
+        }
 
         // Ensure directory exists (Node.js >= 10.12.0)
         const dir = path.dirname(filePath);
