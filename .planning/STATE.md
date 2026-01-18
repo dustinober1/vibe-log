@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T19:42:47Z
+**Last Updated:** 2026-01-18T19:48:57Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 3 - Time-based Rotation
-**Plan:** 04 of 5
-**Status:** In progress
-**Last activity:** 2026-01-18 — Completed 03-04-PLAN.md (Public API Integration for Time-based Rotation)
+**Plan:** 05 of 5
+**Status:** Phase complete
+**Last activity:** 2026-01-18 — Completed 03-05-PLAN.md (Document Time-based Rotation Features)
 
-**Progress:** ██████████░░░░░░░░ 40% (2.4/6 phases complete: Phases 1-2 complete, Phase 3 plan 4 of 5)
+**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T19:42:47Z
-**Stopped at:** Completed 03-04-PLAN.md (Public API Integration for Time-based Rotation)
+**Last session:** 2026-01-18T19:48:57Z
+**Stopped at:** Completed 03-05-PLAN.md (Document Time-based Rotation Features) - Phase 3 complete
 **Resume file:** None
 
 ## Alignment Status
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** IN PROGRESS 🔨 (2.4/5 phases complete)
+**Status:** IN PROGRESS 🔨 (3.0/6 phases complete - Phase 3 done)
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -44,9 +44,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Complete Phase 3: Time-based rotation with comprehensive testing
-- Add integration tests for hybrid rotation scenarios
-- Document time-based rotation features
+- Phase 4: Async gzip compression (5 plans)
+- Phase 5: Retention cleanup (5 plans)
+- Phase 6: Error handling and documentation (6 plans)
 
 ## Decisions Made
 
@@ -97,6 +97,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | TDD methodology for time-based rotation | RED-GREEN-REFACTOR cycle ensures correctness and comprehensive coverage |
 | 2026-01-18 | Export generateRotatedName from utils/rotation | Make utility function available for public API and testing |
 | 2026-01-18 | Pass pattern field in configure() | configure() passes rotation.pattern to FileTransport constructor |
+| 2026-01-18 | Documentation structure for rotation features | Conceptual → API reference → Migration guide for clear adoption path |
+| 2026-01-18 | Three migration scenarios | Cover add daily to size-based, add to no rotation, migrate to hybrid |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -180,21 +182,21 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 03-04: Add tests for pattern configuration
 - [x] Plan 03-04: Export generateRotatedName from utils/rotation
 - [x] Plan 03-04: Add verification tests for FILE-01 and FILE-02 requirements
+- [x] Plan 03-05: Document time-based rotation features
 
 **Upcoming:**
-- [ ] Plan 03-05: Document time-based rotation features
 - [ ] Phase 4: Async gzip compression
 - [ ] Phase 5: Retention cleanup
 - [ ] Phase 6: Error handling and documentation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 2.4/5 phases complete (48%)
+**v1.1 Log Rotation Milestone:** 3.0/6 phases complete (50%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
-| 3 | Time-based Rotation | 4/5 | In progress |
+| 3 | Time-based Rotation | 5/5 | Complete |
 | 4 | Async Compression | 0/5 | Planned |
 | 5 | Retention Cleanup | 0/5 | Planned |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
