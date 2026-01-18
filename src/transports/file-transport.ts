@@ -236,6 +236,9 @@ export class FileTransport implements Transport {
      * Size checking: Track file size internally and trigger rotation when
      * size threshold is exceeded.
      *
+     * Time checking: Initialize lastRotationDate on first write for time-based
+     * rotation. Check if midnight has passed on each write.
+     *
      * This method remains synchronous. Rotation happens asynchronously.
      */
     log(formatted: string, _entry: LogEntry, _config: LoggerConfig): void {
@@ -244,10 +247,18 @@ export class FileTransport implements Transport {
             return;
         }
 
+        // Initialize lastRotationDate on first write for time-based rotation
+        if (this.timeBasedRotationEnabled && !this.lastRotationDate) {
+            this.lastRotationDate = new Date();
+        }
+
         const bytesAboutToWrite = formatted.length + 1; // +1 for newline
 
-        // Check if rotation needed BEFORE writing
-        const needRotation = this.rotationEnabled && this.currentFileSize + bytesAboutToWrite >= this.maxSize!;
+        // Check if rotation needed BEFORE writing (size-based check)
+        const needSizeRotation = this.maxSize !== undefined && this.currentFileSize + bytesAboutToWrite >= this.maxSize;
+
+        // Check if time-based rotation needed
+        const needTimeRotation = this.timeBasedRotationEnabled && this.isMidnightPassed();
 
         // Update file size immediately (before write completes)
         // This allows rotation to trigger before the next write
@@ -256,7 +267,7 @@ export class FileTransport implements Transport {
         try {
             this.stream.write(formatted + '\n', 'utf8', () => {
                 // Trigger rotation after this write is flushed to stream
-                if (needRotation) {
+                if (needSizeRotation || needTimeRotation) {
                     this.checkSizeAndRotate().catch((err) => {
                         console.error(`[FileTransport] Rotation error: ${err instanceof Error ? err.message : String(err)}`);
                     });
@@ -391,6 +402,48 @@ export class FileTransport implements Transport {
     }
 
     /**
+     * Check if midnight UTC has passed since last rotation
+     *
+     * @returns true if midnight has passed (should rotate), false otherwise
+     *
+     * @remarks
+     * This method implements date-based rotation detection using UTC dates.
+     * Compares current UTC date with last rotation UTC date to detect day change.
+     *
+     * Integration: Called from checkSizeAndRotate() as part of hybrid rotation trigger.
+     */
+    private isMidnightPassed(): boolean {
+        // Initialize lastRotationDate on first call
+        if (!this.lastRotationDate) {
+            this.lastRotationDate = new Date();
+            return false;
+        }
+
+        const now = new Date();
+
+        // Compare UTC dates (not timestamps) to detect day change
+        const nowUTC = Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate()
+        );
+
+        const lastUTC = Date.UTC(
+            this.lastRotationDate.getUTCFullYear(),
+            this.lastRotationDate.getUTCMonth(),
+            this.lastRotationDate.getUTCDate()
+        );
+
+        // If current UTC day > last rotation UTC day, rotate
+        if (nowUTC > lastUTC) {
+            this.lastRotationDate = now;
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Check file size and trigger rotation if threshold exceeded
      *
      * @param forceRotation - Force rotation regardless of size (for time-based rotation)
@@ -404,6 +457,11 @@ export class FileTransport implements Transport {
      *
      * Time-based rotation: When called with forceRotation=true from
      * scheduleMidnightRotation callback, this performs rotation regardless of file size.
+     *
+     * Hybrid rotation: Supports both size-based and time-based triggers.
+     * Size trigger: currentFileSize >= maxSize
+     * Time trigger: isMidnightPassed() returns true
+     * Rotation occurs when EITHER condition is met.
      */
     private async checkSizeAndRotate(forceRotation = false): Promise<void> {
         // Skip if rotation not enabled or already rotating
@@ -411,10 +469,11 @@ export class FileTransport implements Transport {
             return;
         }
 
-        // Check if rotation needed (using tracked size for size-based)
-        const needSizeRotation = this.maxSize !== undefined && this.currentFileSize >= this.maxSize;
+        // Check if rotation needed (size OR time triggers)
+        const sizeTriggered = this.maxSize !== undefined && this.currentFileSize >= this.maxSize;
+        const timeTriggered = this.timeBasedRotationEnabled && this.isMidnightPassed();
 
-        if (forceRotation || needSizeRotation) {
+        if (forceRotation || sizeTriggered || timeTriggered) {
             // Set write gate BEFORE rotation starts
             this.rotating = true;
 

@@ -32,20 +32,23 @@ describe('FileTransport - Time-based Rotation', () => {
     });
 
     it('should rotate when midnight UTC is passed', async () => {
+        // Set initial time to Jan 1, 2026 10:00 UTC
+        vi.setSystemTime(new Date('2026-01-01T10:00:00Z'));
+
         const transport = new FileTransport(testFile, { pattern: 'daily' });
         transport.log('first message', { level: 'info', context: 'test', message: 'test', timestamp: new Date() }, {});
 
         // Get initial date
         const initialDate = transport['lastRotationDate'];
 
-        // Advance time past midnight (25 hours)
-        vi.advanceTimersByTime(25 * 60 * 60 * 1000);
-        await vi.runAllTimersAsync();
+        // Advance time past midnight to Jan 2, 2026 01:00 UTC
+        vi.setSystemTime(new Date('2026-01-02T01:00:00Z'));
 
         transport.log('second message', { level: 'info', context: 'test', message: 'test', timestamp: new Date() }, {});
 
         // Verify rotation occurred (lastRotationDate updated)
         expect(transport['lastRotationDate'].getTime()).toBeGreaterThan(initialDate.getTime());
+        expect(transport['lastRotationDate'].getUTCDate()).toBe(2); // Jan 2
 
         await transport.close();
     });
