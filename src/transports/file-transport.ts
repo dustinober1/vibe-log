@@ -8,7 +8,7 @@ import { compressRotatedFile } from '../utils/compression';
 import { cleanupOldLogs } from '../utils/retention';
 
 // Error classification for production error handling
-enum ErrorClass {
+export enum ErrorClass {
     TRANSIENT = 'TRANSIENT',   // Safe to retry
     PERMANENT = 'PERMANENT',   // User action required
     UNKNOWN = 'UNKNOWN'         // Needs investigation
@@ -28,8 +28,10 @@ const ERROR_CLASSIFICATIONS: Record<string, ErrorClass> = {
     'ENOTDIR': ErrorClass.PERMANENT,
 };
 
-function classifyError(error: NodeJS.ErrnoException): ErrorClass {
-    return ERROR_CLASSIFICATIONS[error.code] || ErrorClass.UNKNOWN;
+// Error classification utility for production error handling
+// Exported for use in error recovery strategies and monitoring
+export function classifyError(error: NodeJS.ErrnoException): ErrorClass {
+    return ERROR_CLASSIFICATIONS[error.code ?? ''] || ErrorClass.UNKNOWN;
 }
 
 // Constants for file stream configuration
@@ -103,7 +105,7 @@ function parseSize(size: string | number): number {
 /**
  * Options for FileTransport
  */
-interface FileTransportOptions {
+export interface FileTransportOptions {
     /** Maximum file size before rotation (e.g., '100MB', 104857600) */
     maxSize?: string | number;
     /** Time-based rotation pattern (e.g., 'daily' for midnight UTC rotation) */

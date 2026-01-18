@@ -18,6 +18,10 @@ export type {
 export type { Transport } from './transports/transport';
 export { FileTransport, ConsoleTransport } from './transports';
 
+// Export error handling utilities
+export type { FileTransportOptions } from './transports/file-transport';
+export { ErrorClass, classifyError } from './transports/file-transport';
+
 // Export main logger
 export { log, createScope } from './logger';
 

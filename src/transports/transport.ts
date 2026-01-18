@@ -21,7 +21,11 @@ export interface Transport {
      * internally without blocking the log call.
      *
      * This method MUST NOT throw. Errors should be caught and
-     * handled gracefully (e.g., log to stderr as fallback).
+     * handled gracefully. For production error handling, transports
+     * should:
+     * - Emit 'error' events for monitoring
+     * - Log to console.error as fallback
+     * - Never crash the application
      */
     log(formatted: string, entry: LogEntry, config: LoggerConfig): void;
 
