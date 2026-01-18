@@ -236,6 +236,51 @@ The `maxSize` option accepts:
 
 Default: `'100MB'` if not specified.
 
+### Time-based Rotation
+
+log-vibe supports automatic daily log rotation using the `pattern` option:
+
+```typescript
+import { configure } from 'log-vibe';
+
+configure({
+    file: './logs/app.log',
+    rotation: {
+        pattern: 'daily'  // Rotate at midnight UTC every day
+    }
+});
+```
+
+**How it works:**
+- Logs are automatically rotated at midnight UTC
+- Rotated files are date-stamped (e.g., `app-2026-01-18.log.1`)
+- A timer is scheduled to prevent timing drift
+- Rotation is atomic and non-blocking
+
+**Timezone:** All time-based rotation uses UTC to ensure consistency across servers in different timezones.
+
+### Hybrid Rotation (Size + Time)
+
+You can combine size-based and time-based rotation for maximum flexibility:
+
+```typescript
+import { configure } from 'log-vibe';
+
+configure({
+    file: './logs/app.log',
+    rotation: {
+        pattern: 'daily',   // Rotate at midnight
+        maxSize: '100MB'    // Also rotate if file exceeds 100MB
+    }
+});
+```
+
+**Behavior:** Rotation occurs when EITHER condition is met:
+- Daily at midnight UTC, OR
+- When file size exceeds 100MB
+
+This ensures logs are rotated regularly even if they don't reach the size threshold, and also prevents excessively large log files from accumulating.
+
 ### Rotated File Naming
 
 Rotated files follow this pattern:
