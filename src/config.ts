@@ -1,4 +1,7 @@
 import type { LoggerConfig } from './types';
+import { FileTransport } from './transports/file-transport';
+import { ConsoleTransport } from './transports/console-transport';
+import type { Transport } from './transports/transport';
 
 /**
  * Internal configuration type with required core fields
@@ -17,9 +20,9 @@ const defaultConfig: InternalConfig = {
     useColors: true,
     maxDepth: 10,
     timestampFormat: 'time', // 'time' or 'iso'
+    console: true,
     file: undefined,
     transports: undefined,
-    console: true,
 };
 
 /**
@@ -45,10 +48,41 @@ let currentConfig: InternalConfig = { ...defaultConfig };
  *
  * // Set minimum log level
  * configure({ level: 'warn' });
+ *
+ * // Use file shorthand
+ * configure({ file: './app.log' });
+ *
+ * // Configure explicit transports
+ * configure({ transports: [new FileTransport('./app.log')] });
  * ```
  */
-export function configure(config: Partial<LoggerConfig>): LoggerConfig {
-    currentConfig = { ...currentConfig, ...config };
+export function configure(config: Partial<LoggerConfig>): Required<LoggerConfig> {
+    // File shorthand: convert file string to FileTransport
+    if (config.file && !config.transports) {
+        const fileTransport = new FileTransport(config.file);
+        config.transports = [fileTransport];
+    }
+
+    // Handle transports configuration
+    if (config.transports !== undefined) {
+        // User provided explicit transports array
+        currentConfig.transports = config.transports;
+    }
+
+    // Handle console flag
+    if (config.console !== undefined) {
+        currentConfig.console = config.console;
+    }
+
+    // Merge all other config fields
+    const { file, transports, console: _console, ...otherConfig } = config;
+    currentConfig = { ...currentConfig, ...otherConfig };
+
+    // Build default transports if none set
+    if (!currentConfig.transports) {
+        buildDefaultTransports();
+    }
+
     return { ...currentConfig };
 }
 
@@ -66,4 +100,19 @@ export function getConfig(): LoggerConfig {
  */
 export function resetConfig(): void {
     currentConfig = { ...defaultConfig };
+    buildDefaultTransports();
 }
+
+/**
+ * Build default transports array based on console setting
+ */
+function buildDefaultTransports(): void {
+    if (currentConfig.console) {
+        currentConfig.transports = [new ConsoleTransport()];
+    } else {
+        currentConfig.transports = [];
+    }
+}
+
+// Initialize default transports on module load
+buildDefaultTransports();
