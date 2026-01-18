@@ -126,3 +126,110 @@ describe('generateRotatedName utility', () => {
             .not.toThrow();
     });
 });
+
+describe('Rotation workflow', () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        (fs.createWriteStream as unknown as ReturnType<typeof vi.fn>).mockReturnValue(mockWriteStream);
+        (fs.mkdirSync as unknown as ReturnType<typeof vi.fn>).mockReturnValue(undefined);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('should trigger rotation when file size exceeds maxSize', async () => {
+        // Mock file size
+        (fs.promises.stat as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            size: 100 * 1024 * 1024, // 100MB
+        } as fs.Stats);
+
+        const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
+
+        // Write enough data to trigger rotation
+        const logEntry = 'x'.repeat(1024); // 1KB
+        transport.log(logEntry, {} as any, {} as any);
+
+        // Wait for async rotation to complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Verify rotation was triggered
+        expect(mockWriteStream.end).toHaveBeenCalled();
+    });
+
+    it('should not trigger rotation when file size below maxSize', async () => {
+        // Mock file size
+        (fs.promises.stat as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            size: 50 * 1024 * 1024, // 50MB
+        } as fs.Stats);
+
+        const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
+
+        // Write small amount of data
+        transport.log('small log entry', {} as any, {} as any);
+
+        // Wait for async operations
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Verify rotation was NOT triggered
+        expect(mockWriteStream.end).not.toHaveBeenCalled();
+    });
+
+    it('should gate writes during rotation', async () => {
+        let rotationInProgress = true;
+
+        // Mock stat to return large size
+        (fs.promises.stat as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            size: 100 * 1024 * 1024,
+        } as fs.Stats);
+
+        // Mock rename to delay
+        (fs.rename as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+            (oldPath: string, newPath: string, cb: (err?: Error | null) => void) => {
+                setTimeout(() => cb(null), 100); // Delay rotation
+            }
+        );
+
+        const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
+
+        // Trigger rotation
+        transport.log('trigger rotation', {} as any, {} as any);
+
+        // Wait a bit for rotation to start
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        // Try to write during rotation — should be gated
+        transport.log('during rotation', {} as any, {} as any);
+
+        // Wait for rotation to complete
+        await new Promise(resolve => setTimeout(resolve, 150));
+
+        // Verify only one write happened (the second was gated)
+        expect(mockWriteStream.write).toHaveBeenCalledTimes(1);
+    });
+
+    it('should close stream, rename file, and create new stream', async () => {
+        (fs.promises.stat as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
+            size: 100 * 1024 * 1024,
+        } as fs.Stats);
+
+        (fs.rename as unknown as ReturnType<typeof vi.fn>).mockImplementation(
+            (oldPath: string, newPath: string, cb: (err?: Error | null) => void) => {
+                cb(null);
+            }
+        );
+
+        const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
+
+        // Trigger rotation
+        transport.log('trigger', {} as any, {} as any);
+
+        // Wait for rotation to complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Verify atomic sequence: close → rename → create new stream
+        expect(mockWriteStream.end).toHaveBeenCalled();
+        expect(fs.rename).toHaveBeenCalled();
+        expect(fs.createWriteStream).toHaveBeenCalledTimes(2); // Initial + after rotation
+    });
+});
