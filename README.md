@@ -230,6 +230,12 @@ configure({ file: './app.log' });
 log.info('App', 'Now also writing to file');
 ```
 
+### Troubleshooting and Monitoring
+
+For production deployments, see:
+- **[Troubleshooting Guide](./docs/TROUBLESHOOTING.md)** - Common errors and solutions
+- **[Monitoring Guide](./docs/MONITORING.md)** - Health checks and alerting
+
 ---
 
 ## Log Rotation
@@ -968,6 +974,11 @@ async function sendLog(level: string, context: string, message: string, data?: a
 await sendLog('info', 'App', 'Started');
 await sendLog('error', 'Database', 'Connection failed', { code: 'ECONNREFUSED' });
 ```
+
+### Additional Documentation
+
+- **[Troubleshooting Guide](./docs/TROUBLESHOOTING.md)** - Diagnose and fix production issues
+- **[Monitoring Guide](./docs/MONITORING.md)** - Set up health checks and alerts
 
 ---
 
