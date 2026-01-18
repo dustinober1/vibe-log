@@ -1,10 +1,36 @@
 import fs from 'fs';
 import path from 'path';
+import { EventEmitter } from 'events';
 import type { Transport } from './transport';
 import type { LogEntry, LoggerConfig } from '../types';
 import { getMsUntilNextMidnightUTC, generateRotatedName } from '../utils/rotation';
 import { compressRotatedFile } from '../utils/compression';
 import { cleanupOldLogs } from '../utils/retention';
+
+// Error classification for production error handling
+enum ErrorClass {
+    TRANSIENT = 'TRANSIENT',   // Safe to retry
+    PERMANENT = 'PERMANENT',   // User action required
+    UNKNOWN = 'UNKNOWN'         // Needs investigation
+}
+
+const ERROR_CLASSIFICATIONS: Record<string, ErrorClass> = {
+    // Transient errors - safe to retry
+    'EBUSY': ErrorClass.TRANSIENT,
+    'EAGAIN': ErrorClass.TRANSIENT,
+    'EINTR': ErrorClass.TRANSIENT,
+
+    // Permanent errors - don't retry
+    'ENOSPC': ErrorClass.PERMANENT,     // Disk full
+    'EACCES': ErrorClass.PERMANENT,     // Permission denied
+    'ENOENT': ErrorClass.PERMANENT,
+    'EISDIR': ErrorClass.PERMANENT,
+    'ENOTDIR': ErrorClass.PERMANENT,
+};
+
+function classifyError(error: NodeJS.ErrnoException): ErrorClass {
+    return ERROR_CLASSIFICATIONS[error.code] || ErrorClass.UNKNOWN;
+}
 
 // Constants for file stream configuration
 const DEFAULT_FILE_MODE = 0o666; // read/write for all (modified by umask)
@@ -90,7 +116,7 @@ interface FileTransportOptions {
     maxAge?: number;
 }
 
-export class FileTransport implements Transport {
+export class FileTransport extends EventEmitter implements Transport {
     private stream: fs.WriteStream;
     private readonly filePath: string;
     private closed = false;
@@ -126,6 +152,8 @@ export class FileTransport implements Transport {
      * ```
      */
     constructor(filePath: string, options?: FileTransportOptions) {
+        super(); // Call EventEmitter constructor first
+
         if (!filePath || !filePath.trim()) {
             throw new Error('File path cannot be empty or whitespace');
         }
@@ -332,9 +360,23 @@ export class FileTransport implements Transport {
      * from crashing the application.
      */
     private attachErrorHandler(stream: fs.WriteStream): void {
-        stream.on('error', (err) => {
-            // Fallback to console.error - don't throw, don't crash
-            console.error(`[FileTransport] Write error for ${this.filePath}: ${err.message}`);
+        stream.on('error', (err: NodeJS.ErrnoException) => {
+            // 1. Emit to application for monitoring
+            this.emit('error', err);
+
+            // 2. Log to console (never crash the app)
+            console.error(`[FileTransport] Write error for ${this.filePath}: ${err.code} - ${err.message}`);
+
+            // 3. Error-specific handling
+            if (err.code === 'ENOSPC') {
+                // Disk full - stop accepting writes
+                this.rotating = true;
+                this.emit('disk-full', err);
+            } else if (err.code === 'EACCES') {
+                // Permission denied - fail permanently
+                this.closed = true;
+                this.emit('permission-denied', err);
+            }
         });
     }
 
