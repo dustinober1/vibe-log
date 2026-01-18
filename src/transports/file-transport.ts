@@ -103,6 +103,8 @@ export class FileTransport implements Transport {
     // Field reserved for future use in tracking rotation date
     private lastRotationDate?: Date;
     private readonly compressionLevel?: number;  // Gzip compression level (1-9)
+    private readonly maxFiles?: number;  // Maximum number of log files to keep
+    private readonly maxAge?: number;  // Maximum age of log files in days
 
     /**
      * Create a new file transport
