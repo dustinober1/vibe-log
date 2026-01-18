@@ -80,6 +80,56 @@ export interface RotationConfig {
      * ```
      */
     compressionLevel?: number;
+    /**
+     * Maximum number of log files to retain
+     *
+     * @remarks
+     * When BOTH maxFiles AND maxAge are specified, automatic cleanup of old
+     * log files is enabled. Files are deleted only when BOTH conditions are met
+     * (conservative retention policy).
+     *
+     * This field counts ALL files in the log directory, including the current
+     * active log file and all rotated files (both .gz and uncompressed).
+     *
+     * Default: 20 files
+     *
+     * Must be specified together with maxAge. Rotation works without retention
+     * if neither field is specified.
+     *
+     * Retention policy: File deleted only if BOTH maxFiles AND maxAge exceeded
+     *
+     * Example:
+     * ```typescript
+     * { maxSize: '100MB', maxFiles: 20, maxAge: 30 }  // Keep 20 files, 30 days
+     * { maxSize: '100MB', maxFiles: 50, maxAge: 7 }   // Keep 50 files, 7 days
+     * ```
+     */
+    maxFiles?: number;
+    /**
+     * Maximum age of log files to retain (in days)
+     *
+     * @remarks
+     * When BOTH maxFiles AND maxAge are specified, automatic cleanup of old
+     * log files is enabled. Files are deleted only when BOTH conditions are met
+     * (conservative retention policy).
+     *
+     * Age is calculated from the date embedded in rotated filenames (YYYY-MM-DD format).
+     * Uses UTC to avoid timezone issues.
+     *
+     * Default: 30 days
+     *
+     * Must be specified together with maxFiles. Rotation works without retention
+     * if neither field is specified.
+     *
+     * Retention policy: File deleted only if BOTH maxFiles AND maxAge exceeded
+     *
+     * Example:
+     * ```typescript
+     * { maxSize: '100MB', maxFiles: 20, maxAge: 30 }  // Keep 20 files, 30 days
+     * { maxSize: '100MB', maxFiles: 50, maxAge: 7 }   // Keep 50 files, 7 days
+     * ```
+     */
+    maxAge?: number;
 }
 
 /**
