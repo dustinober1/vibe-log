@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T20:22:29Z
+**Last Updated:** 2026-01-18T20:24:27Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 4 - Async Compression
-**Plan:** 02 of 5
+**Plan:** 03 of 5
 **Status:** Phase in progress
-**Last activity:** 2026-01-18 — Completed compressRotatedFile utility function (94 lines, stream-based gzip compression)
+**Last activity:** 2026-01-18 — Completed compression scheduling in FileTransport rotation workflow
 
-**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete, Phase 4 - 2/5 plans complete)
+**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete, Phase 4 - 3/5 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T20:22:29Z
-**Stopped at:** Completed 04-02-PLAN.md (compressRotatedFile utility function)
+**Last session:** 2026-01-18T20:24:27Z
+**Stopped at:** Completed 04-03-PLAN.md (compression scheduling in FileTransport)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,7 +44,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Phase 4: Async gzip compression (5 plans in 4 waves - 2/5 complete)
+- Phase 4: Async gzip compression (5 plans in 4 waves - 3/5 complete)
 - Phase 5: Retention cleanup (5 plans)
 - Phase 6: Error handling and documentation (6 plans)
 
@@ -104,6 +104,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Failed file handling | Move to failed/ subdirectory for manual inspection |
 | 2026-01-18 | Delete original file after compression | Prevent data loss by keeping uncompressed file until compression succeeds |
 | 2026-01-18 | Cross-device rename error handling | Leave failed file in place if rename fails with EXDEV error |
+| 2026-01-18 | Compression scheduling after rotation | Schedule compression in performRotation after rename completes |
+| 2026-01-18 | Compression level validation (1-9) | Validate compressionLevel in constructor, throw Error if invalid |
+| 2026-01-18 | Fire-and-forget compression pattern | No await on compressRotatedFile, error catch prevents unhandled rejection |
+| 2026-01-18 | Conditional compression | Only compress when compressionLevel is defined |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -151,6 +155,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Public API integration: Pass configuration fields through to underlying implementations
 - Stream pipeline compression: Use pipeline() from node:stream/promises for robust error handling
 - Fire-and-forget compression: Schedule with 10ms setTimeout, no await in rotation flow
+- Compression scheduling: Call compressRotatedFile after rotation completes with setTimeout delay
+- Conditional compression: Check compressionLevel is defined before scheduling compression
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -214,6 +220,6 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
 | 3 | Time-based Rotation | 5/5 | Complete |
-| 4 | Async Compression | 2/5 | In Progress |
+| 4 | Async Compression | 3/5 | In Progress |
 | 5 | Retention Cleanup | 0/5 | Planned |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
