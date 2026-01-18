@@ -3,6 +3,10 @@ import path from 'path';
 import type { Transport } from './transport';
 import type { LogEntry, LoggerConfig } from '../types';
 
+// Constants for file stream configuration
+const DEFAULT_FILE_MODE = 0o666; // read/write for all (modified by umask)
+const STREAM_ENCODING = 'utf8';
+
 /**
  * Parse human-readable file size to bytes
  *
@@ -148,7 +152,7 @@ export class FileTransport implements Transport {
      * Create a new file transport
      *
      * @param filePath - Path to the log file (relative or absolute)
-     * @param options - Rotation options (optional, for future use)
+     * @param options - Rotation options (optional)
      *
      * @throws {Error} If filePath is empty or only whitespace
      * @throws {Error} If rotation config has invalid size format
@@ -158,7 +162,7 @@ export class FileTransport implements Transport {
      * // Basic file logging (no rotation)
      * const transport = new FileTransport('./logs/app.log');
      *
-     * // With rotation (future implementation)
+     * // With rotation enabled
      * const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
      * ```
      */
@@ -169,7 +173,7 @@ export class FileTransport implements Transport {
 
         this.filePath = filePath;
 
-        // Parse rotation config if provided (stored for Phase 2 implementation)
+        // Parse rotation config if provided
         this.rotationEnabled = false;
         if (options !== undefined && options.maxSize !== undefined) {
             this.maxSize = parseSize(options.maxSize);
@@ -185,18 +189,8 @@ export class FileTransport implements Transport {
             throw new Error(`Failed to create directory for log file: ${err.message}`);
         }
 
-        // Create append stream with UTF-8 encoding
-        this.stream = fs.createWriteStream(filePath, {
-            flags: 'a',      // append mode
-            encoding: 'utf8',
-            mode: 0o666,     // read/write for all (modified by umask)
-        });
-
-        // Prevent crashes on stream errors (Critical: unhandled error events crash Node.js)
-        this.stream.on('error', (err) => {
-            // Fallback to console.error - don't throw, don't crash
-            console.error(`[FileTransport] Write error for ${this.filePath}: ${err.message}`);
-        });
+        // Create append stream
+        this.stream = this.createWriteStream(filePath);
     }
 
     /**
@@ -273,6 +267,44 @@ export class FileTransport implements Transport {
     }
 
     /**
+     * Create a new write stream for the log file
+     *
+     * @param filePath - Path to the log file
+     * @returns Write stream with error handler attached
+     *
+     * @remarks
+     * This helper method encapsulates stream creation logic to avoid duplication.
+     * Used during initialization and rotation.
+     */
+    private createWriteStream(filePath: string): fs.WriteStream {
+        const stream = fs.createWriteStream(filePath, {
+            flags: 'a',           // append mode
+            encoding: STREAM_ENCODING,
+            mode: DEFAULT_FILE_MODE,
+        });
+
+        // Prevent crashes on stream errors (Critical: unhandled error events crash Node.js)
+        this.attachErrorHandler(stream);
+        return stream;
+    }
+
+    /**
+     * Attach error handler to a write stream
+     *
+     * @param stream - Write stream to attach handler to
+     *
+     * @remarks
+     * Error handler falls back to console.error to prevent logging failures
+     * from crashing the application.
+     */
+    private attachErrorHandler(stream: fs.WriteStream): void {
+        stream.on('error', (err) => {
+            // Fallback to console.error - don't throw, don't crash
+            console.error(`[FileTransport] Write error for ${this.filePath}: ${err.message}`);
+        });
+    }
+
+    /**
      * Perform atomic rotation: close stream → rename file → create new stream
      *
      * @returns Promise that resolves when rotation completes
@@ -303,33 +335,13 @@ export class FileTransport implements Transport {
                 fs.rename(this.filePath, rotatedPath, (renameErr: NodeJS.ErrnoException | null) => {
                     if (renameErr) {
                         // Rename failed — try to recover by reopening original file
-                        this.stream = fs.createWriteStream(this.filePath, {
-                            flags: 'a',
-                            encoding: 'utf8',
-                            mode: 0o666,
-                        });
-
-                        // Re-attach error handler
-                        this.stream.on('error', (err) => {
-                            console.error(`[FileTransport] Write error for ${this.filePath}: ${err.message}`);
-                        });
-
+                        this.stream = this.createWriteStream(this.filePath);
                         reject(renameErr);
                         return;
                     }
 
                     // Step 3: Create new stream for continued logging
-                    this.stream = fs.createWriteStream(this.filePath, {
-                        flags: 'a',
-                        encoding: 'utf8',
-                        mode: 0o666,
-                    });
-
-                    // Re-attach error handler to new stream
-                    this.stream.on('error', (err) => {
-                        console.error(`[FileTransport] Write error for ${this.filePath}: ${err.message}`);
-                    });
-
+                    this.stream = this.createWriteStream(this.filePath);
                     resolve();
                 });
             });
