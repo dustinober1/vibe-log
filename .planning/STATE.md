@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T22:07:48Z
+**Last Updated:** 2026-01-18T22:09:38Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 5 - Retention Cleanup
-**Plan:** 03 of 5
+**Plan:** 04 of 5
 **Status:** In progress
-**Last activity:** 2026-01-18 — Completed plan 05-03 (Retention state in FileTransport)
+**Last activity:** 2026-01-18 — Completed plan 05-04 (Integrate retention cleanup into rotation flow)
 
-**Progress:** ████████░░░░░░░ 60% (4/6 phases complete, Phase 5: 3/5 plans complete)
+**Progress:** ████████░░░░░░░ 60% (4/6 phases complete, Phase 5: 4/5 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T22:07:48Z
-**Stopped at:** Completed Phase 5 Plan 03 (Retention state in FileTransport)
+**Last session:** 2026-01-18T22:09:38Z
+**Stopped at:** Completed Phase 5 Plan 04 (Integrate retention cleanup into rotation flow)
 **Resume file:** None
 
 ## Alignment Status
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** IN PROGRESS 🔨 (4/6 phases complete - Phase 5: 3/5 plans complete)
+**Status:** IN PROGRESS 🔨 (4/6 phases complete - Phase 5: 4/5 plans complete)
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -44,7 +44,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Phase 5: Retention cleanup (5 plans - 3/5 complete)
+- Phase 5: Retention cleanup (5 plans - 4/5 complete)
 - Phase 6: Error handling and documentation (6 plans)
 
 ## Decisions Made
@@ -128,6 +128,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | FileTransport accepts retention configuration | FileTransportOptions extended with maxFiles and maxAge fields |
 | 2026-01-18 | Private readonly fields for retention | maxFiles and maxAge stored as private readonly fields in FileTransport |
 | 2026-01-18 | Constructor validates retention config | Enforces both-fields requirement with clear error messages |
+| 2026-01-18 | Retention cleanup integrated after rotation | Fire-and-forget pattern with 20ms delay (10ms compression + 10ms buffer) |
+| 2026-01-18 | Non-fatal cleanup error handling | Emit 'error' event on stream for cleanup failures, continue logging |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -184,6 +186,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Comprehensive error testing: Test error scenarios naturally instead of complex mocking
 - Async testing with delays: Use setTimeout to verify fire-and-forget behavior
 - Retention cleanup: After-rotation trigger with 20ms delay (after compression)
+- Fire-and-forget cleanup: Schedule with setTimeout, catch errors, don't await
+- Non-fatal error emission: Emit 'error' events for cleanup failures while continuing operation
 - Filename date parsing: Extract YYYY-MM-DD from rotated filenames for age calculation
 - AND logic enforcement: Both maxFiles AND maxAge must be exceeded before deletion
 - Best-effort deletion: Continue on errors, log partial results, emit error events
@@ -252,18 +256,17 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 05-05: Add retention tests and documentation
 
 **Upcoming:**
-- [ ] Execute Phase 5 Plan 04: Integrate retention cleanup into rotation flow
 - [ ] Execute Phase 5 Plan 05: Add retention tests and documentation
 - [ ] Phase 6: Error handling and documentation (6 plans)
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 4/6 phases complete (67%), Phase 5: 3/5 plans complete (60%)
+**v1.1 Log Rotation Milestone:** 4/6 phases complete (67%), Phase 5: 4/5 plans complete (80%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
 | 3 | Time-based Rotation | 5/5 | Complete |
 | 4 | Async Compression | 5/5 | Complete |
-| 5 | Retention Cleanup | 3/5 | In progress |
+| 5 | Retention Cleanup | 4/5 | In progress |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
