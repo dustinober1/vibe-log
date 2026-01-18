@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T22:09:38Z
+**Last Updated:** 2026-01-18T22:14:18Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 5 - Retention Cleanup
-**Plan:** 04 of 5
-**Status:** In progress
-**Last activity:** 2026-01-18 — Completed plan 05-04 (Integrate retention cleanup into rotation flow)
+**Plan:** 05 of 5
+**Status:** Complete
+**Last activity:** 2026-01-18 — Completed plan 05-05 (Add retention tests and documentation)
 
-**Progress:** ████████░░░░░░░ 60% (4/6 phases complete, Phase 5: 4/5 plans complete)
+**Progress:** ████████░░░░░░░ 83% (5/6 phases complete, Phase 5: 5/5 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T22:09:38Z
-**Stopped at:** Completed Phase 5 Plan 04 (Integrate retention cleanup into rotation flow)
+**Last session:** 2026-01-18T22:14:18Z
+**Stopped at:** Completed Phase 5 Plan 05 (Add retention tests and documentation)
 **Resume file:** None
 
 ## Alignment Status
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** IN PROGRESS 🔨 (4/6 phases complete - Phase 5: 4/5 plans complete)
+**Status:** IN PROGRESS 🔨 (5/6 phases complete - Phase 5 complete)
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -44,8 +44,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Phase 5: Retention cleanup (5 plans - 4/5 complete)
 - Phase 6: Error handling and documentation (6 plans)
+- v1.1 release preparation
 
 ## Decisions Made
 
@@ -130,6 +130,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Constructor validates retention config | Enforces both-fields requirement with clear error messages |
 | 2026-01-18 | Retention cleanup integrated after rotation | Fire-and-forget pattern with 20ms delay (10ms compression + 10ms buffer) |
 | 2026-01-18 | Non-fatal cleanup error handling | Emit 'error' event on stream for cleanup failures, continue logging |
+| 2026-01-18 | Retention tests verify AND logic | 14 integration tests covering validation, AND logic, edge cases, end-to-end flow |
+| 2026-01-18 | Retention documentation structure | Follows compression pattern: Overview → Policy → Configuration → How It Works → Error Handling → Benefits |
+| 2026-01-18 | Migration guide for retention | Before/after example shows adding retention to existing rotation configs |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -256,17 +259,17 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 05-05: Add retention tests and documentation
 
 **Upcoming:**
-- [ ] Execute Phase 5 Plan 05: Add retention tests and documentation
 - [ ] Phase 6: Error handling and documentation (6 plans)
+- [ ] v1.1 release preparation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 4/6 phases complete (67%), Phase 5: 4/5 plans complete (80%)
+**v1.1 Log Rotation Milestone:** 5/6 phases complete (83%), Phase 5 complete (100%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
 | 3 | Time-based Rotation | 5/5 | Complete |
 | 4 | Async Compression | 5/5 | Complete |
-| 5 | Retention Cleanup | 4/5 | In progress |
+| 5 | Retention Cleanup | 5/5 | Complete |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
