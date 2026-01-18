@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T21:59:51Z
+**Last Updated:** 2026-01-18T22:03:41Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 5 - Retention Cleanup
-**Plan:** 01 of 5
+**Plan:** 02 of 5
 **Status:** In progress
-**Last activity:** 2026-01-18 — Completed plan 05-01 (Retention interface extensions)
+**Last activity:** 2026-01-18 — Completed plan 05-02 (Retention utility functions)
 
-**Progress:** ████████░░░░░░░ 58% (4/6 phases complete, Phase 5: 1/5 plans complete)
+**Progress:** ████████░░░░░░░ 60% (4/6 phases complete, Phase 5: 2/5 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T21:59:51Z
-**Stopped at:** Completed Phase 5 Plan 01 (Retention interface extensions)
+**Last session:** 2026-01-18T22:03:41Z
+**Stopped at:** Completed Phase 5 Plan 02 (Retention utility functions)
 **Resume file:** None
 
 ## Alignment Status
@@ -120,6 +120,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Best-effort deletion with error handling | Continue on locked files, log partial results |
 | 2026-01-18 | Both retention fields required together | Validation ensures maxFiles and maxAge are both specified |
 | 2026-01-18 | maxFiles counts all files including current active | maxFiles value includes active log file in total count |
+| 2026-01-18 | Retention utility functions implemented | parseRotatedDate, getSortedRotatedFiles, calculateAgeInDays, cleanupOldLogs with AND logic |
+| 2026-01-18 | Filename date parsing for retention cleanup | Parse YYYY-MM-DD from rotated filenames, strip .gz suffix, use UTC dates |
+| 2026-01-18 | Safety check prevents deleting all files | Return immediately if total files <= 1 (only active file exists) |
+| 2026-01-18 | Best-effort deletion with error array | Continue on locked files, return errors array for partial failures |
+| 2026-01-18 | TDD methodology for retention utilities | RED-GREEN-REFACTOR cycle with 20 comprehensive tests |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -142,9 +147,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Performance Metrics
 
-**Test Coverage:** 194/196 tests passing (99.0%)
-**Test Files:** 18 test files
+**Test Coverage:** 220/222 tests passing (99.1%)
+**Test Files:** 19 test files
 **Lines of Code (v1.0):** 1,048 lines TypeScript
+**Lines Added (05-02):** 253 lines (retention.ts) + 398 lines (retention.test.ts)
 
 **Note:** 2 integration tests fail when run in parallel due to test isolation issue (pass when run in isolation)
 
@@ -178,6 +184,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Filename date parsing: Extract YYYY-MM-DD from rotated filenames for age calculation
 - AND logic enforcement: Both maxFiles AND maxAge must be exceeded before deletion
 - Best-effort deletion: Continue on errors, log partial results, emit error events
+- Retention utility functions: parseRotatedDate, getSortedRotatedFiles, calculateAgeInDays, cleanupOldLogs
+- Safety mechanism: Never delete all files (totalFiles <= 1 check)
+- Error array return type: Return { deleted, errors } for partial failure tracking
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -240,7 +249,6 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 05-05: Add retention tests and documentation
 
 **Upcoming:**
-- [ ] Execute Phase 5 Plan 02: Create retention utility functions (TDD)
 - [ ] Execute Phase 5 Plan 03: Add retention state to FileTransport
 - [ ] Execute Phase 5 Plan 04: Integrate retention cleanup into rotation flow
 - [ ] Execute Phase 5 Plan 05: Add retention tests and documentation
@@ -248,12 +256,12 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 4/6 phases complete (67%), Phase 5: 1/5 plans complete (20%)
+**v1.1 Log Rotation Milestone:** 4/6 phases complete (67%), Phase 5: 2/5 plans complete (40%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
 | 3 | Time-based Rotation | 5/5 | Complete |
 | 4 | Async Compression | 5/5 | Complete |
-| 5 | Retention Cleanup | 1/5 | In progress |
+| 5 | Retention Cleanup | 2/5 | In progress |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
