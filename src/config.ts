@@ -6,8 +6,8 @@ import { ConsoleTransport } from './transports/console-transport';
  * Internal configuration type with required core fields
  * Transport-related fields remain optional for backward compatibility
  */
-type InternalConfig = Required<Omit<LoggerConfig, 'file' | 'transports' | 'console'>> &
-    Pick<LoggerConfig, 'file' | 'transports' | 'console'>;
+type InternalConfig = Required<Omit<LoggerConfig, 'file' | 'transports' | 'console' | 'rotation'>> &
+    Pick<LoggerConfig, 'file' | 'transports' | 'console' | 'rotation'>;
 
 /**
  * Default configuration for the logger

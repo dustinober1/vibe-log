@@ -79,8 +79,11 @@ export class FileTransport implements Transport {
     private stream: fs.WriteStream;
     private readonly filePath: string;
     private closed = false;
-    private maxSize?: number;
-    private rotationEnabled = false;
+    // Rotation config stored for future implementation in Phase 2
+    // @ts-expect-error - Intentionally unused, stored for Phase 2 rotation implementation
+    private readonly maxSize?: number;
+    // @ts-expect-error - Intentionally unused, stored for Phase 2 rotation implementation
+    private readonly rotationEnabled: boolean;
 
     /**
      * Create a new file transport
@@ -107,7 +110,8 @@ export class FileTransport implements Transport {
 
         this.filePath = filePath;
 
-        // Parse rotation config if provided
+        // Parse rotation config if provided (stored for Phase 2 implementation)
+        this.rotationEnabled = false;
         if (options?.maxSize) {
             this.maxSize = parseSize(options.maxSize);
             this.rotationEnabled = true;
