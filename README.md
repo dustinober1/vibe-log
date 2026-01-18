@@ -427,6 +427,21 @@ configure({ maxDepth: 5 });
 | `console` | `boolean` | `true` | Enable console transport |
 | `transports` | `Transport[]` | `[ConsoleTransport]` | Custom transport instances |
 
+**RotationConfig Options:**
+
+The `rotation` option accepts an object with the following fields:
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `maxSize` | `string \| number` | `'100MB'` | Maximum file size before rotation (e.g., `'100MB'`, `'1.5GB'`, or bytes as number) |
+| `pattern` | `'daily'` | `undefined` | Time-based rotation pattern. Set to `'daily'` to rotate at midnight UTC |
+
+**Notes:**
+- Both `maxSize` and `pattern` are optional
+- When both are specified, rotation occurs when EITHER condition is met
+- Time-based rotation uses UTC timezone for consistency across servers
+- `pattern: 'daily'` enables automatic rotation at midnight UTC
+
 ---
 
 ## Examples
