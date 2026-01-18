@@ -38,6 +38,9 @@ log.error('API', 'Request failed', { status: 500 });
 - 🔍 **Pretty Printing** - Objects and errors are formatted beautifully
 - 📝 **TypeScript First** - Full type safety out of the box
 - ⚡ **Dual Module Support** - Works with both CommonJS and ES Modules
+
+### Extended Capabilities
+
 - ⚙️ **Configurable** - Customize colors, timestamps, icons, and more
 - 🛡️ **Input Validation** - Prevents empty contexts and messages
 - 🔄 **Circular Reference Safe** - Handles circular objects gracefully
