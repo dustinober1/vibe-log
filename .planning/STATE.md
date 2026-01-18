@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T18:42:35Z
+**Last Updated:** 2026-01-18T18:55:27Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 2 - Core Rotation Infrastructure
-**Plan:** 5 (of 6)
-**Status:** In progress
-**Last activity:** 2026-01-18T18:42:35Z — Completed 02-05-PLAN.md (Integration tests for rotation functionality with TDD)
+**Plan:** 6 (of 6)
+**Status:** Phase complete
+**Last activity:** 2026-01-18T18:55:27Z — Completed 02-06-PLAN.md (Config validation)
 
-**Progress:** █████████░░░░░░░░░ 33% (2/6 phases complete: Phase 1 complete, Plan 02-05 of 6 complete)
+**Progress:** ██████████░░░░░░░░ 33% (2/6 phases complete: Phase 1 complete, Phase 2 complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T18:42:35Z
-**Stopped at:** Completed 02-05-PLAN.md (Integration tests with 15 tests, refactoring)
+**Last session:** 2026-01-18T18:55:27Z
+**Stopped at:** Completed 02-06-PLAN.md (Public API integration, integration tests, documentation)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,9 +44,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Execute next plan in Phase 2 (02-06: Config validation)
-- Complete Phase 2 (Core Rotation Infrastructure)
 - Begin Phase 3: Time-based rotation with midnight scheduling
+- Implement time-based rotation triggers (daily at midnight)
+- Add rotation scheduling infrastructure
 
 ## Decisions Made
 
@@ -80,6 +80,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Test rotation via public API | parseSize and generateRotatedName tested indirectly through FileTransport behavior |
 | 2026-01-18 | Extract constants for maintainability | DEFAULT_FILE_MODE and STREAM_ENCODING reduce magic numbers |
 | 2026-01-18 | Helper methods eliminate duplication | createWriteStream() and attachErrorHandler() reduce code repetition |
+| 2026-01-18 | Internal file size tracking | Track size in FileTransport to avoid fs.stat() race conditions |
+| 2026-01-18 | Synchronous size updates | Update size before write to enable accurate rotation checks |
+| 2026-01-18 | Rotation trigger in callback | Trigger rotation after write completes to avoid blocking |
+| 2026-01-18 | Rotation config only for file shorthand | Custom FileTransport instances receive options via constructor |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -137,7 +141,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Implement atomic rotation sequence
 - [x] Add size checking logic to FileTransport
 - [x] Add integration tests for rotation workflow
-- [ ] Add rotation configuration validation
+- [x] Integrate rotation config into public API
+- [x] Add rotation documentation to README
 
 **Upcoming:**
 - [ ] Phase 3: Time-based rotation with midnight scheduling
@@ -147,11 +152,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 1/5 phases started (22%)
+**v1.1 Log Rotation Milestone:** 2/5 phases complete (40%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
-| 2 | Core Rotation Infrastructure | 5/6 | In Progress |
+| 2 | Core Rotation Infrastructure | 6/6 | Complete |
 | 3 | Time-based Rotation | 0/5 | Planned |
 | 4 | Async Compression | 0/5 | Planned |
 | 5 | Retention Cleanup | 0/5 | Planned |
