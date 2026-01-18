@@ -238,6 +238,20 @@ describe('config', () => {
             // Verify the transport was created and can log
             expect(() => log.info('test', 'Test message with compression')).not.toThrow();
         });
+
+        it('should pass maxFiles and maxAge to FileTransport', () => {
+            configure({
+                file: path.join(testLogsDir, 'retention.log'),
+                rotation: { maxFiles: 10, maxAge: 7 }
+            });
+
+            const config = getConfig();
+            expect(config.rotation?.maxFiles).toBe(10);
+            expect(config.rotation?.maxAge).toBe(7);
+
+            // Verify the transport was created and can log
+            expect(() => log.info('test', 'Test message with retention')).not.toThrow();
+        });
     });
 
     describe('generateRotatedName verification (FILE-01 and FILE-02)', () => {
