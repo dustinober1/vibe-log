@@ -397,6 +397,31 @@ configure({
 - Provides predictable log file management
 - Maintains backward compatibility with existing size-based configs
 
+**Add Compression to Existing Rotation:**
+
+Before (size-based rotation without compression):
+```typescript
+configure({
+    file: './logs/app.log',
+    rotation: {
+        maxSize: '100MB'
+    }
+});
+```
+
+After (with compression):
+```typescript
+configure({
+    file: './logs/app.log',
+    rotation: {
+        maxSize: '100MB',
+        compressionLevel: 6  // Add compression
+    }
+});
+```
+
+**Benefits:** Rotated files compressed automatically, disk space reduced 5-10x
+
 ### How It Works
 
 1. **Size Check**: After each log write, the file size is checked
@@ -406,6 +431,98 @@ configure({
 5. **Resume**: Logging continues with new file
 
 **Important**: Rotation is atomic — no log entries are lost during rotation.
+
+---
+
+## Log Compression
+
+Rotated log files can be automatically compressed using gzip to save disk space.
+Compression runs asynchronously (fire-and-forget) without blocking your application.
+
+### Compression Levels
+
+Compression level controls the trade-off between speed and file size:
+
+| Level | Speed | Size | Use Case |
+|-------|-------|------|----------|
+| 1 | Fastest | Largest | High-volume logging, fast rotation |
+| 6 | Balanced | Balanced | Default, recommended for most cases |
+| 9 | Slowest | Smallest | Limited disk space, infrequent rotation |
+
+Default: `6` (balanced compression)
+
+### Configuration
+
+Enable compression by setting `compressionLevel` in rotation config:
+
+```typescript
+import { configure } from 'log-vibe';
+
+// Compress rotated files with level 6 (balanced)
+configure({
+  file: './logs/app.log',
+  rotation: {
+    maxSize: '100MB',
+    compressionLevel: 6,  // Balanced compression
+  }
+});
+
+// Fast compression for high-volume logging
+configure({
+  file: './logs/app.log',
+  rotation: {
+    maxSize: '100MB',
+    compressionLevel: 1,  // Fastest, larger files
+  }
+});
+
+// Maximum compression for limited disk space
+configure({
+  file: './logs/app.log',
+  rotation: {
+    maxSize: '100MB',
+    compressionLevel: 9,  // Slowest, smallest files
+  }
+});
+
+// Compression with daily rotation
+configure({
+  file: './logs/app.log',
+  rotation: {
+    pattern: 'daily',
+    compressionLevel: 6,
+  }
+});
+```
+
+### How It Works
+
+1. **Rotation**: Log file rotates when size threshold exceeded or daily at midnight UTC
+2. **Delay**: Compression starts after 10ms delay to avoid CPU spikes during active logging
+3. **Compression**: Rotated file compressed to `.gz` using specified compression level
+4. **Cleanup**: Original uncompressed file deleted after successful compression
+5. **Fire-and-forget**: Compression runs asynchronously without blocking the `log()` method
+
+### Error Handling
+
+If compression fails (disk full, permissions, etc.):
+
+- Error logged to console: `[FileTransport] Compression failed for {file}: {error}`
+- Uncompressed file moved to `failed/` subdirectory in log directory
+- Application continues logging (no crash)
+- Manual inspection/retry required for failed files
+
+Example failed file location:
+```
+./logs/failed/app-2026-01-18.log.1
+```
+
+### Benefits
+
+- **Disk space**: Compressed files are typically 5-10x smaller than uncompressed
+- **Performance**: Asynchronous compression doesn't block logging
+- **Flexibility**: Choose speed or size based on your needs
+- **Reliability**: Failed compression doesn't crash your application
 
 ---
 
@@ -506,12 +623,14 @@ The `rotation` option accepts an object with the following fields:
 |-------|------|---------|-------------|
 | `maxSize` | `string \| number` | `'100MB'` | Maximum file size before rotation (e.g., `'100MB'`, `'1.5GB'`, or bytes as number) |
 | `pattern` | `'daily'` | `undefined` | Time-based rotation pattern. Set to `'daily'` to rotate at midnight UTC |
+| `compressionLevel` | `number` | `undefined` | Gzip compression level for rotated files (1-9, where 6 is balanced) |
 
 **Notes:**
-- Both `maxSize` and `pattern` are optional
-- When both are specified, rotation occurs when EITHER condition is met
+- All rotation options (`maxSize`, `pattern`, `compressionLevel`) are optional
+- Rotation occurs when ANY specified condition is met (size, time, or both)
 - Time-based rotation uses UTC timezone for consistency across servers
 - `pattern: 'daily'` enables automatic rotation at midnight UTC
+- `compressionLevel` enables async gzip compression of rotated files (1-9, default 6)
 
 ---
 
