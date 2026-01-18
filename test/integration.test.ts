@@ -1,12 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { configure, resetConfig } from '../src/config';
 import { log } from '../src/logger';
 import { FileTransport } from '../src/transports/file-transport';
 
 describe('Rotation integration', () => {
-    const testDir = path.join(process.cwd(), 'test-logs');
+    const testDir = path.join(process.cwd(), `test-logs-${randomUUID()}`);
     const testFile = path.join(testDir, 'integration.log');
 
     beforeEach(async () => {
