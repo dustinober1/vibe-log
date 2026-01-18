@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import type { Transport } from './transport';
 import type { LogEntry, LoggerConfig } from '../types';
+import { getMsUntilNextMidnightUTC } from '../utils/rotation';
 
 // Constants for file stream configuration
 const DEFAULT_FILE_MODE = 0o666; // read/write for all (modified by umask)
@@ -137,6 +138,8 @@ function escapeRegExp(str: string): string {
 interface FileTransportOptions {
     /** Maximum file size before rotation (e.g., '100MB', 104857600) */
     maxSize?: string | number;
+    /** Time-based rotation pattern (e.g., 'daily' for midnight UTC rotation) */
+    pattern?: 'daily';
 }
 
 export class FileTransport implements Transport {
@@ -145,9 +148,12 @@ export class FileTransport implements Transport {
     private closed = false;
     private readonly maxSize?: number;
     private readonly rotationEnabled: boolean;
+    private readonly timeBasedRotationEnabled: boolean;
     private rotating = false;              // Write gate flag
     private rotationInProgress?: Promise<void>;  // Track rotation promise
     private currentFileSize = 0;           // Track current file size
+    private rotationTimer?: NodeJS.Timeout;
+    private lastRotationDate?: Date;
 
     /**
      * Create a new file transport
@@ -176,8 +182,14 @@ export class FileTransport implements Transport {
 
         // Parse rotation config if provided
         this.rotationEnabled = false;
+        this.timeBasedRotationEnabled = false;
         if (options !== undefined && options.maxSize !== undefined) {
             this.maxSize = parseSize(options.maxSize);
+            this.rotationEnabled = true;
+        }
+        if (options !== undefined && options.pattern === 'daily') {
+            this.timeBasedRotationEnabled = true;
+            // Enable rotation for time-based pattern
             this.rotationEnabled = true;
         }
 
