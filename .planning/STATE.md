@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 2 - Core Rotation Infrastructure
-**Plan:** 2 (of 6)
+**Plan:** 3 (of 6)
 **Status:** In progress
-**Last activity:** 2026-01-18 — Completed 02-02-PLAN.md (Rotated filename generator with UTC date-stamping)
+**Last activity:** 2026-01-18 — Completed 02-03-PLAN.md (Atomic rotation sequence with stream.end() for safe flush and error recovery)
 
-**Progress:** ████████░░░░░░░░░░░ 20% (1.2/6 phases complete: Phase 1 complete, Plan 02-02 of 6 complete)
+**Progress:** ████████░░░░░░░░░░░ 22% (1.33/6 phases complete: Phase 1 complete, Plan 02-03 of 6 complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T18:31:16Z
-**Stopped at:** Completed 02-02-PLAN.md (generateRotatedName utility function with UTC date-stamping and sequence collision handling)
+**Last session:** 2026-01-18T18:31:36Z
+**Stopped at:** Completed 02-03-PLAN.md (performRotation method with atomic close → rename → create new stream sequence)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,9 +44,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Execute next plan in Phase 2 (02-03: Size checking logic)
+- Execute next plan in Phase 2 (02-04: Size checking logic)
 - Implement size checking logic to trigger rotation
-- Add atomic rotation sequence (close → rename → create)
+- Add write gating to prevent concurrent writes during rotation
 
 ## Decisions Made
 
@@ -69,6 +69,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | UTC date format for rotated filenames | ISO date (toISOString) avoids timezone issues across servers |
 | 2026-01-18 | Sequence collision detection via directory scan | fs.readdirSync to find existing rotated files and increment sequence |
 | 2026-01-18 | Graceful error handling for missing directories | Default to sequence 1 if directory doesn't exist, rotation will create it |
+| 2026-01-18 | Use stream.end() not stream.destroy() for rotation | stream.end() flushes all buffered data before close, preventing log entry loss |
+| 2026-01-18 | Error recovery on rotation rename failure | Reopen original file to allow continued logging instead of crashing |
+| 2026-01-18 | Re-attach error handler after rotation | Prevents unhandled error events from crashing Node.js after stream recreation |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -120,8 +123,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan Phase 2: Core Rotation Infrastructure
 - [x] Implement RotationConfig interface
 - [x] Implement generateRotatedName utility function
+- [x] Implement atomic rotation sequence
 - [ ] Add size checking logic to FileTransport
-- [ ] Implement atomic rotation sequence
 
 **Upcoming:**
 - [ ] Phase 3: Time-based rotation with midnight scheduling
@@ -131,11 +134,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 1/5 phases started (17%)
+**v1.1 Log Rotation Milestone:** 1/5 phases started (22%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
-| 2 | Core Rotation Infrastructure | 2/6 | In Progress |
+| 2 | Core Rotation Infrastructure | 3/6 | In Progress |
 | 3 | Time-based Rotation | 0/5 | Planned |
 | 4 | Async Compression | 0/5 | Planned |
 | 5 | Retention Cleanup | 0/5 | Planned |
