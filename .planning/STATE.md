@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 2 - Core Rotation Infrastructure
-**Plan:** 3 (of 6)
+**Plan:** 4 (of 6)
 **Status:** In progress
-**Last activity:** 2026-01-18 — Completed 02-03-PLAN.md (Atomic rotation sequence with stream.end() for safe flush and error recovery)
+**Last activity:** 2026-01-18 — Completed 02-04-PLAN.md (Write gating with rotating flag and automatic size checking via checkSizeAndRotate)
 
-**Progress:** ████████░░░░░░░░░░░ 22% (1.33/6 phases complete: Phase 1 complete, Plan 02-03 of 6 complete)
+**Progress:** ████████░░░░░░░░░░░ 28% (1.67/6 phases complete: Phase 1 complete, Plan 02-04 of 6 complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T18:31:36Z
-**Stopped at:** Completed 02-03-PLAN.md (performRotation method with atomic close → rename → create new stream sequence)
+**Last session:** 2026-01-18T18:34:29Z
+**Stopped at:** Completed 02-04-PLAN.md (Write gating, checkSizeAndRotate method, modified log() method)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,9 +44,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Execute next plan in Phase 2 (02-04: Size checking logic)
-- Implement size checking logic to trigger rotation
-- Add write gating to prevent concurrent writes during rotation
+- Execute next plan in Phase 2 (02-05 or 02-06: Integration tests or Config validation)
+- Test rotation workflow end-to-end
+- Add rotation configuration validation
 
 ## Decisions Made
 
@@ -72,6 +72,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Use stream.end() not stream.destroy() for rotation | stream.end() flushes all buffered data before close, preventing log entry loss |
 | 2026-01-18 | Error recovery on rotation rename failure | Reopen original file to allow continued logging instead of crashing |
 | 2026-01-18 | Re-attach error handler after rotation | Prevents unhandled error events from crashing Node.js after stream recreation |
+| 2026-01-18 | Write gating with rotating flag | Blocks writes during rotation to prevent data loss and race conditions |
+| 2026-01-18 | Fire-and-forget rotation triggering | checkSizeAndRotate called without await to keep log() synchronous |
+| 2026-01-18 | Size checking after write operation | Check size after write to avoid blocking the write operation itself |
+| 2026-01-18 | Rotation deduplication via promise tracking | rotationInProgress promise prevents concurrent rotation checks |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -104,6 +108,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Fire-and-forget async operations via setImmediate()
 - Try-finally blocks for cleanup guarantees
 - Atomic rotation: close → rename → create new stream
+- Write gating: skip log() calls when rotating flag is true
+- Size checking with fs.promises.stat() for accurate file size
+- Rotation deduplication via rotationInProgress promise tracking
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -124,7 +131,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Implement RotationConfig interface
 - [x] Implement generateRotatedName utility function
 - [x] Implement atomic rotation sequence
-- [ ] Add size checking logic to FileTransport
+- [x] Add size checking logic to FileTransport
+- [ ] Add integration tests for rotation workflow
+- [ ] Add rotation configuration validation
 
 **Upcoming:**
 - [ ] Phase 3: Time-based rotation with midnight scheduling
@@ -138,7 +147,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
-| 2 | Core Rotation Infrastructure | 3/6 | In Progress |
+| 2 | Core Rotation Infrastructure | 4/6 | In Progress |
 | 3 | Time-based Rotation | 0/5 | Planned |
 | 4 | Async Compression | 0/5 | Planned |
 | 5 | Retention Cleanup | 0/5 | Planned |
