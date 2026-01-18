@@ -318,4 +318,51 @@ export class FileTransport implements Transport {
             });
         });
     }
+
+    /**
+     * Check file size and trigger rotation if threshold exceeded
+     *
+     * @param bytesAboutToWrite - Number of bytes that will be written
+     *
+     * @remarks
+     * Uses fs.stat() to get current file size. If size + bytesAboutToWrite
+     * exceeds maxSize, triggers rotation. Deduplicates concurrent rotation
+     * checks by tracking rotationInProgress promise.
+     *
+     * This method is async but called fire-and-forget from log() to avoid
+     * blocking writes. The rotating flag ensures no writes during rotation.
+     */
+    private async checkSizeAndRotate(bytesAboutToWrite: number): Promise<void> {
+        // Skip if rotation not enabled or already rotating
+        if (!this.rotationEnabled || this.rotating || this.rotationInProgress) {
+            return;
+        }
+
+        try {
+            // Get current file size
+            const stats = await fs.promises.stat(this.filePath);
+            const currentSize = stats.size;
+
+            // Check if rotation needed
+            if (currentSize + bytesAboutToWrite >= this.maxSize!) {
+                // Set write gate BEFORE rotation starts
+                this.rotating = true;
+
+                // Perform rotation and track promise
+                this.rotationInProgress = this.performRotation();
+
+                try {
+                    await this.rotationInProgress;
+                } finally {
+                    // Clear write gate AFTER rotation completes
+                    this.rotating = false;
+                    this.rotationInProgress = undefined;
+                }
+            }
+        } catch (error) {
+            // File doesn't exist or stat failed — log error but don't crash
+            const err = error as NodeJS.ErrnoException;
+            console.error(`[FileTransport] Size check failed: ${err.message}`);
+        }
+    }
 }
