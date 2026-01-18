@@ -83,6 +83,10 @@ interface FileTransportOptions {
     pattern?: 'daily';
     /** Gzip compression level for rotated log files (1-9, default 6) */
     compressionLevel?: number;
+    /** Maximum number of log files to keep (default: 20) */
+    maxFiles?: number;
+    /** Maximum age of log files in days (default: 30) */
+    maxAge?: number;
 }
 
 export class FileTransport implements Transport {
