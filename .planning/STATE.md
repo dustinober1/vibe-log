@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T23:05:00Z
+**Last Updated:** 2026-01-18T22:59:18Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 6 - Error Handling & Production Hardening
-**Plan:** 04 of 6
+**Plan:** 06 of 6
 **Status:** Complete
-**Last activity:** 2026-01-18 — Completed plan 06-04 (Production troubleshooting documentation)
+**Last activity:** 2026-01-18 — Completed plan 06-06 (Production deployment documentation)
 
-**Progress:** ████████░░░░░░░ 83% (5/6 phases complete, Phase 6: 4/6 plans complete)
+**Progress:** ██████████░░░░ 100% (5/6 phases complete, Phase 6: 6/6 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T23:05:00Z
-**Stopped at:** Completed Phase 6 Plan 04 (Production troubleshooting documentation)
+**Last session:** 2026-01-18T22:59:18Z
+**Stopped at:** Completed Phase 6 Plan 06 (Production deployment documentation)
 **Resume file:** None
 
 ## Alignment Status
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** IN PROGRESS 🔨 (5/6 phases complete - Phase 6 in progress)
+**Status:** COMPLETE ✅ (all 6 phases finished, ready for release)
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -143,6 +143,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Write gating with error state checks | log() checks isDiskFull() and isPermissionDenied() before attempting writes |
 | 2026-01-18 | Directory recreation on ENOENT during rotation | performRotation attempts to recreate directory if fs.rename fails with ENOENT |
 | 2026-01-18 | Graceful degradation for edge cases | All error states handled without crashing application, errors logged to console |
+| 2026-01-18 | Multi-process limitation prominently documented | Limitations section placed near top of README with clear workarounds |
+| 2026-01-18 | Production deployment examples organized by platform | Docker, Kubernetes, and cloud logging patterns documented with examples |
+| 2026-01-18 | Dedicated logging server pattern for multi-process | Documented HTTP-based logging server architecture for multi-process scenarios |
+| 2026-01-18 | Documentation cross-linking pattern | Links to TROUBLESHOOTING.md and MONITORING.md in multiple sections |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -286,14 +290,14 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 06-03: Add edge case hardening for production scenarios
 - [x] Plan 06-04: Create troubleshooting documentation
 - [x] Plan 06-05: Create monitoring documentation
+- [x] Plan 06-06: Add deployment examples
 
 **Upcoming:**
-- [ ] Plan 06-06: Add deployment examples
 - [ ] v1.1 release preparation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 5/6 phases complete (83%), Phase 6: 5/6 plans complete
+**v1.1 Log Rotation Milestone:** 6/6 phases complete (100%), Phase 6: 6/6 plans complete
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
@@ -301,10 +305,14 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 3 | Time-based Rotation | 5/5 | Complete |
 | 4 | Async Compression | 5/5 | Complete |
 | 5 | Retention Cleanup | 5/5 | Complete |
-| 6 | Error Handling & Production Hardening | 4/6 | In progress |
+| 6 | Error Handling & Production Hardening | 6/6 | Complete |
 | 2026-01-18 | Monitoring documentation with health check patterns | Health check endpoint example demonstrates status tracking with error state management |
 | 2026-01-18 | Alert levels table with severity-based actions | Info (rotation), Warning (80% disk), Critical (90% disk, ENOSPC, EACCES) |
 | 2026-01-18 | Integration examples for common monitoring systems | Slack webhooks, email via nodemailer, Prometheus Pushgateway |
 | 2026-01-18 | Shell script examples for health monitoring | Bash scripts for environments without Node.js runtime |
 | 2026-01-18 | Metrics dashboard pattern with Express endpoint | Real-time metrics exposure via /metrics endpoint with error and rotation tracking |
 | 2026-01-18 | Cross-reference to TROUBLESHOOTING.md | Comprehensive coverage linking monitoring to troubleshooting workflows |
+| 2026-01-18 | Production deployment documentation | README updated with Docker, Kubernetes, cloud logging patterns, and multi-process workarounds |
+| 2026-01-18 | Limitations section in README | Multi-process writing constraint prominently documented with clear workarounds |
+| 2026-01-18 | Deployment examples by platform | Dockerfile, docker-compose.yml, Kubernetes manifests, cloud-specific configurations |
+| 2026-01-18 | Documentation cross-linking | Links to TROUBLESHOOTING.md and MONITORING.md in multiple README sections |
