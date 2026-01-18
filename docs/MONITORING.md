@@ -144,3 +144,167 @@ fi
 echo "OK: Logging system healthy"
 exit 0
 ```
+
+## Error Event Monitoring
+
+### Error Categories
+
+log-vibe emits different error events based on the error type:
+
+| Event | Error Code | Severity | Action Required |
+|-------|-----------|----------|-----------------|
+| `error` | Any | Warning | Monitor for patterns |
+| `disk-full` | ENOSPC | Critical | Free disk space immediately |
+| `permission-denied` | EACCES | Critical | Fix permissions or restart |
+
+### Comprehensive Error Handler
+
+```typescript
+import { FileTransport } from 'log-vibe';
+import { promisify } from 'util';
+
+const transport = new FileTransport('./logs/app.log', {
+  maxSize: '100MB'
+});
+
+// Error statistics
+const errorStats = {
+  total: 0,
+  byCode: new Map<string, number>(),
+  lastError: null as { code: string; message: string; time: Date } | null
+};
+
+// General error handler
+transport.on('error', (err: NodeJS.ErrnoException) => {
+  errorStats.total++;
+  errorStats.byCode.set(err.code, (errorStats.byCode.get(err.code) || 0) + 1);
+  errorStats.lastError = {
+    code: err.code,
+    message: err.message,
+    time: new Date()
+  };
+
+  // Log for monitoring
+  console.error('[MONITOR] Transport error:', {
+    code: err.code,
+    message: err.message,
+    totalErrors: errorStats.total,
+    errorsByCode: Object.fromEntries(errorStats.byCode)
+  });
+
+  // Alert on repeated errors
+  const count = errorStats.byCode.get(err.code) || 0;
+  if (count >= 5) {
+    console.error(`[ALERT] Error ${err.code} occurred ${count} times`);
+    sendAlert('repeated-error', { code: err.code, count });
+  }
+});
+
+// Critical error handlers
+transport.on('disk-full', (err) => {
+  console.error('[CRITICAL] Disk full - take immediate action');
+  sendAlert('disk-full', { path: './logs/app.log' });
+
+  // Send to monitoring service
+  notifyPagerDuty({
+    summary: 'Log disk full',
+    severity: 'critical',
+    details: { path: './logs/app.log' }
+  });
+});
+
+transport.on('permission-denied', (err) => {
+  console.error('[CRITICAL] Permission denied - logging stopped');
+  sendAlert('permission-denied', { path: './logs/app.log' });
+});
+
+// Get error stats for monitoring
+function getErrorStats() {
+  return {
+    total: errorStats.total,
+    byCode: Object.fromEntries(errorStats.byCode),
+    lastError: errorStats.lastError
+  };
+}
+```
+
+## Log File Health
+
+### File Size Monitoring
+
+Monitor log file sizes to detect issues:
+
+```typescript
+import fs from 'fs/promises';
+import path from 'path';
+
+async function checkLogHealth(logDir: string, baseName: string) {
+  const files = await fs.readdir(logDir);
+  const logFiles = files.filter(f => f.startsWith(baseName));
+
+  const health = {
+    totalFiles: logFiles.length,
+    totalSize: 0,
+    oldestFile: null,
+    newestFile: null,
+    issues: []
+  };
+
+  for (const file of logFiles) {
+    const filePath = path.join(logDir, file);
+    const stats = await fs.stat(filePath);
+
+    health.totalSize += stats.size;
+
+    if (!health.oldestFile || stats.mtime < health.oldestFile.mtime) {
+      health.oldestFile = { name: file, mtime: stats.mtime, size: stats.size };
+    }
+
+    if (!health.newestFile || stats.mtime > health.newestFile.mtime) {
+      health.newestFile = { name: file, mtime: stats.mtime, size: stats.size };
+    }
+
+    // Check for very large files (may indicate rotation not working)
+    const maxSize = 200 * 1024 * 1024; // 200MB
+    if (stats.size > maxSize && !file.includes('.log.')) {
+      health.issues.push(`Large active file: ${file} (${Math.round(stats.size / 1024 / 1024)}MB)`);
+    }
+  }
+
+  return health;
+}
+
+// Usage
+setInterval(async () => {
+  const health = await checkLogHealth('./logs', 'app');
+  console.log('[HEALTH] Log file status:', health);
+
+  if (health.issues.length > 0) {
+    console.error('[ALERT] Log health issues:', health.issues);
+  }
+}, 60000); // Check every minute
+```
+
+### File Age Monitoring
+
+Monitor log file ages to detect stale logs:
+
+```typescript
+async function checkLogFreshness(logFile: string, maxAgeMinutes = 10) {
+  try {
+    const stats = await fs.stat(logFile);
+    const ageMs = Date.now() - stats.mtimeMs;
+    const ageMinutes = ageMs / 60000;
+
+    if (ageMinutes > maxAgeMinutes) {
+      console.error(`[ALERT] Log file is stale: ${logFile} (${Math.round(ageMinutes)} minutes old)`);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(`[ALERT] Cannot access log file: ${logFile}`);
+    return false;
+  }
+}
+```
