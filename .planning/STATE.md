@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T22:47:06Z
+**Last Updated:** 2026-01-18T22:49:45Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 6 - Error Handling & Production Hardening
-**Plan:** 02 of 6
-**Status:** In progress
-**Last activity:** 2026-01-18 — Completed plan 06-02 (Fix integration test isolation)
+**Plan:** 01 of 6
+**Status:** Complete
+**Last activity:** 2026-01-18 — Completed plan 06-01 (EventEmitter error handling)
 
-**Progress:** ████████░░░░░░░ 84% (5/6 phases complete, Phase 6: 2/6 plans complete)
+**Progress:** ████████░░░░░░░ 83% (5/6 phases complete, Phase 6: 1/6 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T22:47:06Z
-**Stopped at:** Completed Phase 6 Plan 02 (Fix integration test isolation)
+**Last session:** 2026-01-18T22:49:45Z
+**Stopped at:** Completed Phase 6 Plan 01 (EventEmitter error handling)
 **Resume file:** None
 
 ## Alignment Status
@@ -135,6 +135,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Migration guide for retention | Before/after example shows adding retention to existing rotation configs |
 | 2026-01-18 | UUID-based unique test directories | Use crypto.randomUUID() to prevent test interference in parallel execution |
 | 2026-01-18 | Constructor inheritance pattern | Always call super() before accessing 'this' when extending EventEmitter |
+| 2026-01-18 | EventEmitter-based error handling for FileTransport | Emit 'error', 'disk-full', 'permission-denied' events for production monitoring |
+| 2026-01-18 | Export error classification utilities to public API | ErrorClass enum and classifyError function enable user error recovery strategies |
+| 2026-01-18 | ENOSPC errors set rotating=true to stop writes | Disk full errors should stop accepting writes immediately, not buffer in memory |
+| 2026-01-18 | EACCES errors set closed=true for permanent failure | Permission denied errors require user action; fail permanently with event emission |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -199,6 +203,12 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Retention utility functions: parseRotatedDate, getSortedRotatedFiles, calculateAgeInDays, cleanupOldLogs
 - Safety mechanism: Never delete all files (totalFiles <= 1 check)
 - Error array return type: Return { deleted, errors } for partial failure tracking
+- EventEmitter error handling: FileTransport extends EventEmitter for error event emission
+- Error classification: ErrorClass enum distinguishes TRANSIENT, PERMANENT, UNKNOWN errors
+- Production error events: Emit 'error', 'disk-full', 'permission-denied' events for monitoring
+- Console.error fallback: All errors logged to console.error to prevent silent failures
+- ENOSPC handling: Set rotating=true to stop writes when disk is full
+- EACCES handling: Set closed=true for permanent failure on permission denied
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -210,6 +220,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Retention utilities in utils/retention for cleanup logic
 - Retention policy uses AND logic (conservative approach)
 - Cleanup triggered after rotation (fire-and-forget pattern)
+- EventEmitter pattern for error handling: Emit events instead of throwing to prevent app crashes
+- Error classification available to users: Export ErrorClass and classifyError for monitoring strategies
 
 **Known Pitfalls to Avoid:**
 1. Stream data loss: use `stream.end()` not `stream.destroy()`
@@ -225,6 +237,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 11. Timezone issues with age calculation: Use UTC consistently for date parsing
 12. Blocking writes during cleanup: Use fire-and-forget pattern with setTimeout
 13. Constructor inheritance: Always call super() before accessing 'this' when extending classes
+14. Unhandled 'error' events on EventEmitter: Always attach error handlers to prevent Node.js process crash
+15. Throwing from log() method: Use event emission instead; throwing crashes applications
 
 ## Todos
 
@@ -260,14 +274,22 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 05-03: Add retention state to FileTransport
 - [x] Plan 05-04: Integrate retention cleanup into rotation flow
 - [x] Plan 05-05: Add retention tests and documentation
+- [x] Plan 06-01: Extend FileTransport with EventEmitter
+- [x] Plan 06-01: Add error classification utility
+- [x] Plan 06-01: Enhance stream error handler with event emission
+- [x] Plan 06-01: Update Transport interface error handling documentation
 
 **Upcoming:**
-- [ ] Phase 6: Error handling and documentation (6 plans)
+- [ ] Plan 06-02: Fix integration test isolation
+- [ ] Plan 06-03: Add edge case hardening
+- [ ] Plan 06-04: Create troubleshooting documentation
+- [ ] Plan 06-05: Create monitoring documentation
+- [ ] Plan 06-06: Add deployment examples
 - [ ] v1.1 release preparation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 5/6 phases complete (84%), Phase 6: 2/6 plans complete
+**v1.1 Log Rotation Milestone:** 5/6 phases complete (83%), Phase 6: 1/6 plans complete
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
@@ -275,4 +297,4 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 3 | Time-based Rotation | 5/5 | Complete |
 | 4 | Async Compression | 5/5 | Complete |
 | 5 | Retention Cleanup | 5/5 | Complete |
-| 6 | Error Handling & Production Hardening | 2/6 | In progress |
+| 6 | Error Handling & Production Hardening | 1/6 | In progress |
