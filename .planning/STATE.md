@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T19:31:56Z
+**Last Updated:** 2026-01-18T19:35:05Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 3 - Time-based Rotation
-**Plan:** 02 of 5
+**Plan:** 03 of 5
 **Status:** In progress
-**Last activity:** 2026-01-18 — Completed 03-02-PLAN.md (Timer-based daily rotation)
+**Last activity:** 2026-01-18 — Completed 03-03-PLAN.md (Time-based rotation trigger logic)
 
-**Progress:** ██████████░░░░░░░░ 38% (2.3/6 phases complete: Phases 1-2 complete, Phase 3 plan 2 of 5)
+**Progress:** ██████████░░░░░░░░ 40% (2.4/6 phases complete: Phases 1-2 complete, Phase 3 plan 3 of 5)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T19:31:56Z
-**Stopped at:** Completed 03-02-PLAN.md (Timer-based daily rotation)
+**Last session:** 2026-01-18T19:35:05Z
+**Stopped at:** Completed 03-03-PLAN.md (Time-based rotation trigger logic)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,9 +44,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Complete Phase 3: Time-based rotation with midnight scheduling
-- Implement hybrid rotation logic (size OR time triggers)
-- Add integration tests for time-based rotation
+- Complete Phase 3: Time-based rotation with comprehensive testing
+- Add integration tests for hybrid rotation scenarios
+- Document time-based rotation features
 
 ## Decisions Made
 
@@ -90,6 +90,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Recursive setTimeout for daily rotation | Prevents timing drift that accumulates with setInterval |
 | 2026-01-18 | Force rotation parameter for triggers | Distinguishes size-based (false) from time-based (true) rotation |
 | 2026-01-18 | Timer cleanup in close() method | Clear timers before stream cleanup to prevent memory leaks |
+| 2026-01-18 | UTC date comparison for midnight detection | Compare UTC dates (not timestamps) to detect day change accurately |
+| 2026-01-18 | Hybrid rotation triggers (size OR time) | Rotation occurs when EITHER condition is met, not requiring both |
+| 2026-01-18 | Initialize lastRotationDate on first write | Set lastRotationDate in log() method when time-based rotation enabled |
+| 2026-01-18 | Vitest fake timers for time-based testing | Use vi.useFakeTimers() and vi.setSystemTime() to test without real delays |
+| 2026-01-18 | TDD methodology for time-based rotation | RED-GREEN-REFACTOR cycle ensures correctness and comprehensive coverage |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -112,7 +117,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Performance Metrics
 
-**Test Coverage (v1.0):** 97.24% (124/124 tests passing)
+**Test Coverage:** 149/149 tests passing (100%)
+**Test Files:** 16 test files
 **Lines of Code (v1.0):** 1,048 lines TypeScript
 
 ## Accumulated Context
@@ -128,6 +134,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - UTC-based time calculations: Use Date.UTC() and getUTC*() methods for timezone-independent scheduling
 - Recursive setTimeout scheduling: Each timeout recalculates delay to prevent timing drift
 - Timer cleanup in disposal: Clear timers in close() before releasing resources
+- UTC date comparison: Compare dates (not timestamps) for accurate midnight detection
+- Hybrid rotation triggers: Check both size and time conditions, rotate if either is true
+- Time-based initialization: Set lastRotationDate on first write when time-based rotation enabled
+- TDD cycle: RED (failing tests) → GREEN (implementation) → REFACTOR (edge cases)
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -157,23 +167,25 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 03-02: Add timer state and import getMsUntilNextMidnightUTC
 - [x] Plan 03-02: Implement scheduleMidnightRotation method
 - [x] Plan 03-02: Implement clearRotationTimer and integrate into close()
+- [x] Plan 03-03: Implement isMidnightPassed method for midnight detection
+- [x] Plan 03-03: Integrate hybrid rotation trigger logic (size OR time)
+- [x] Plan 03-03: Add comprehensive tests for time-based rotation
 
 **Upcoming:**
-- [ ] Plan 03-03: Add timer-based rotation triggers
-- [ ] Plan 03-04: Implement hybrid rotation logic (size + time)
-- [ ] Plan 03-05: Add tests and documentation for time-based rotation
+- [ ] Plan 03-04: Add integration tests for hybrid rotation scenarios
+- [ ] Plan 03-05: Document time-based rotation features
 - [ ] Phase 4: Async gzip compression
 - [ ] Phase 5: Retention cleanup
 - [ ] Phase 6: Error handling and documentation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 2.3/5 phases complete (46%)
+**v1.1 Log Rotation Milestone:** 2.4/5 phases complete (48%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
-| 3 | Time-based Rotation | 2/5 | In progress |
+| 3 | Time-based Rotation | 3/5 | In progress |
 | 4 | Async Compression | 0/5 | Planned |
 | 5 | Retention Cleanup | 0/5 | Planned |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
