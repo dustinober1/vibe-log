@@ -392,6 +392,15 @@ export class FileTransport implements Transport {
                         }, 10);  // 10ms delay to avoid CPU spike during active logging
                     }
 
+                    // Step 6: Trigger retention cleanup if configured
+                    if (this.maxFiles !== undefined && this.maxAge !== undefined) {
+                        setTimeout(() => {
+                            this.performRetentionCleanup().catch((err) => {
+                                console.error(`[FileTransport] Retention cleanup error: ${err instanceof Error ? err.message : String(err)}`);
+                            });
+                        }, 20);  // 20ms delay: 10ms for compression + 10ms buffer
+                    }
+
                     resolve();
                 });
             });
