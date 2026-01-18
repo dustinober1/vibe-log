@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T20:24:27Z
+**Last Updated:** 2026-01-18T20:33:45Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 4 - Async Compression
-**Plan:** 03 of 5
+**Plan:** 04 of 5
 **Status:** Phase in progress
-**Last activity:** 2026-01-18 — Completed compression scheduling in FileTransport rotation workflow
+**Last activity:** 2026-01-18 — Completed comprehensive test suite for async compression with TDD methodology
 
-**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete, Phase 4 - 3/5 plans complete)
+**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete, Phase 4 - 4/5 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T20:24:27Z
-**Stopped at:** Completed 04-03-PLAN.md (compression scheduling in FileTransport)
+**Last session:** 2026-01-18T20:33:45Z
+**Stopped at:** Completed 04-04-PLAN.md (compression test suite)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,7 +44,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Phase 4: Async gzip compression (5 plans in 4 waves - 3/5 complete)
+- Phase 4: Async gzip compression (5 plans in 4 waves - 4/5 complete)
 - Phase 5: Retention cleanup (5 plans)
 - Phase 6: Error handling and documentation (6 plans)
 
@@ -108,6 +108,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Compression level validation (1-9) | Validate compressionLevel in constructor, throw Error if invalid |
 | 2026-01-18 | Fire-and-forget compression pattern | No await on compressRotatedFile, error catch prevents unhandled rejection |
 | 2026-01-18 | Conditional compression | Only compress when compressionLevel is defined |
+| 2026-01-18 | TDD methodology for compression tests | RED-GREEN-REFACTOR cycle ensures correctness and comprehensive coverage |
+| 2026-01-18 | Test isolation with dedicated directories | Use unique test directories to avoid interference between test suites |
+| 2026-01-18 | Comprehensive error testing | Test error scenarios naturally (e.g., directory instead of file) instead of complex mocking |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -115,7 +118,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 | Issue | Impact | Status |
 |-------|--------|--------|
-| - | - | - |
+| Integration test isolation issue | Tests fail when run in parallel due to shared directory cleanup | Documented for Phase 6 |
 
 ## Dependencies
 
@@ -130,9 +133,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Performance Metrics
 
-**Test Coverage:** 165/165 tests passing (100%)
-**Test Files:** 16 test files
+**Test Coverage:** 194/196 tests passing (99.0%)
+**Test Files:** 18 test files
 **Lines of Code (v1.0):** 1,048 lines TypeScript
+
+**Note:** 2 integration tests fail when run in parallel due to test isolation issue (pass when run in isolation)
 
 ## Accumulated Context
 
@@ -157,6 +162,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Fire-and-forget compression: Schedule with 10ms setTimeout, no await in rotation flow
 - Compression scheduling: Call compressRotatedFile after rotation completes with setTimeout delay
 - Conditional compression: Check compressionLevel is defined before scheduling compression
+- Test isolation: Use dedicated test directories to avoid interference between test suites
+- Comprehensive error testing: Test error scenarios naturally instead of complex mocking
+- Async testing with delays: Use setTimeout to verify fire-and-forget behavior
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -220,6 +228,6 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
 | 3 | Time-based Rotation | 5/5 | Complete |
-| 4 | Async Compression | 3/5 | In Progress |
+| 4 | Async Compression | 4/5 | In Progress |
 | 5 | Retention Cleanup | 0/5 | Planned |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
