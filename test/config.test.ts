@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { configure, getConfig, resetConfig } from '../src/config';
 import { log } from '../src/logger';
+import { generateRotatedName } from '../src/utils/rotation';
 import fs from 'fs';
 import path from 'path';
 
@@ -223,6 +224,126 @@ describe('config', () => {
             });
 
             expect(() => log.info('test', 'Test message without rotation')).not.toThrow();
+        });
+    });
+
+    describe('generateRotatedName verification (FILE-01 and FILE-02)', () => {
+        const testDir = './test-logs-generateRotatedName';
+
+        afterEach(() => {
+            // Clean up test directory
+            try {
+                if (fs.existsSync(testDir)) {
+                    fs.rmSync(testDir, { recursive: true, force: true });
+                }
+            } catch (error) {
+                // Ignore cleanup errors
+            }
+        });
+
+        it('should generate date-stamped filenames for rotated files (FILE-01)', () => {
+            const baseName = path.join(testDir, 'app.log');
+
+            const rotatedName = generateRotatedName(baseName);
+
+            // Verify format: app-YYYY-MM-DD.log.1 (or .2, .3, etc.)
+            expect(rotatedName).toMatch(/app-\d{4}-\d{2}-\d{2}\.log\.\d+$/);
+            expect(rotatedName).not.toBe(baseName); // Rotated name is different from active
+            expect(rotatedName).toContain(path.join(testDir, 'app-')); // Contains path and date-stamped format
+        });
+
+        it('should generate different names for different sequence numbers', () => {
+            const baseName = path.join(testDir, 'app.log');
+
+            // Create test directory
+            fs.mkdirSync(testDir, { recursive: true });
+
+            // Get current date string for consistent testing
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+
+            // Create an existing rotated file
+            fs.writeFileSync(path.join(testDir, `app-${dateStr}.log.1`), '');
+
+            // Now generate a new name - should get sequence 2
+            const rotatedName = generateRotatedName(baseName);
+
+            // Should have sequence 2 since .1 already exists
+            expect(rotatedName).toMatch(/app-\d{4}-\d{2}-\d{2}\.log\.2$/);
+        });
+
+        it('should handle different file extensions correctly', () => {
+            const logFile = path.join(testDir, 'app.log');
+            const txtFile = path.join(testDir, 'error.txt');
+            const jsonFile = path.join(testDir, 'output.json');
+
+            const rotatedLog = generateRotatedName(logFile);
+            const rotatedTxt = generateRotatedName(txtFile);
+            const rotatedJson = generateRotatedName(jsonFile);
+
+            expect(rotatedLog).toMatch(/app-\d{4}-\d{2}-\d{2}\.log\.\d+$/);
+            expect(rotatedTxt).toMatch(/error-\d{4}-\d{2}-\d{2}\.txt\.\d+$/);
+            expect(rotatedJson).toMatch(/output-\d{4}-\d{2}-\d{2}\.json\.\d+$/);
+        });
+
+        it('should increment sequence number for same-day rotations', () => {
+            const baseName = path.join(testDir, 'app.log');
+
+            // Create test directory and simulate existing rotated files
+            fs.mkdirSync(testDir, { recursive: true });
+
+            // Get current date string for consistent testing
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+
+            // Create existing rotated files
+            fs.writeFileSync(path.join(testDir, `app-${dateStr}.log.1`), '');
+            fs.writeFileSync(path.join(testDir, `app-${dateStr}.log.2`), '');
+
+            const rotatedName = generateRotatedName(baseName);
+
+            // Should be .3 since .1 and .2 already exist
+            expect(rotatedName).toMatch(/app-\d{4}-\d{2}-\d{2}\.log\.3$/);
+        });
+
+        it('should use sequence 1 when no existing rotated files', () => {
+            const baseName = path.join(testDir, 'app.log');
+
+            // Create test directory (but no existing rotated files)
+            fs.mkdirSync(testDir, { recursive: true });
+
+            const rotatedName = generateRotatedName(baseName);
+
+            // Should be .1 since no existing files
+            expect(rotatedName).toMatch(/app-\d{4}-\d{2}-\d{2}\.log\.1$/);
+        });
+
+        it('should handle paths with multiple directories', () => {
+            const baseName = path.join(testDir, 'nested/deep/app.log');
+
+            const rotatedName = generateRotatedName(baseName);
+
+            // Should preserve the directory structure
+            expect(rotatedName).toContain(path.join(testDir, 'nested/deep'));
+            expect(rotatedName).toMatch(/app-\d{4}-\d{2}-\d{2}\.log\.\d+$/);
+        });
+
+        it('should handle files with no extension', () => {
+            const baseName = path.join(testDir, 'server');
+
+            const rotatedName = generateRotatedName(baseName);
+
+            // Should handle missing extension
+            expect(rotatedName).toMatch(/server-\d{4}-\d{2}-\d{2}\.\d+$/);
+        });
+
+        it('should handle files with multiple extensions', () => {
+            const baseName = path.join(testDir, 'app.tar.gz');
+
+            const rotatedName = generateRotatedName(baseName);
+
+            // Should use the last extension
+            expect(rotatedName).toMatch(/app\.tar-\d{4}-\d{2}-\d{2}\.gz\.\d+$/);
         });
     });
 });

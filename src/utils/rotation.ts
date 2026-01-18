@@ -121,7 +121,7 @@ export function generateRotatedName(filePath: string): string {
 
     try {
         const existingFiles = fs.readdirSync(dir)
-            .filter(f => f.startsWith(`${base}-${dateStr}`) && f.endsWith(ext));
+            .filter(f => f.startsWith(`${base}-${dateStr}`));
 
         // Extract highest sequence number from existing files
         const maxSequence = existingFiles.reduce((max, file) => {
