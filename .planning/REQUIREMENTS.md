@@ -10,7 +10,7 @@ Requirements for v1.1 Log Rotation milestone. Each maps to roadmap phases.
 ### Rotation Triggers
 
 - [ ] **ROTATE-01**: Daily rotation at midnight creates date-stamped file
-- [ ] **ROTATE-02**: Size-based rotation when file exceeds threshold (default 100MB)
+- [x] **ROTATE-02**: Size-based rotation when file exceeds threshold (default 100MB)
 
 ### Compression
 
@@ -29,13 +29,13 @@ Requirements for v1.1 Log Rotation milestone. Each maps to roadmap phases.
 
 ### Configuration
 
-- [ ] **CONFIG-01**: Rotation configured via `configure({ file, rotation })`
-- [ ] **CONFIG-02**: Backward compatible — no rotation config means no rotation
+- [x] **CONFIG-01**: Rotation configured via `configure({ file, rotation })`
+- [x] **CONFIG-02**: Backward compatible — no rotation config means no rotation
 
 ### Reliability
 
-- [ ] **RELIABLE-01**: Rotation is atomic — no log entries lost during rotation
-- [ ] **RELIABLE-02**: Stream properly closed and cleaned up during rotation
+- [x] **RELIABLE-01**: Rotation is atomic — no log entries lost during rotation
+- [x] **RELIABLE-02**: Stream properly closed and cleaned up during rotation
 
 ### Error Handling
 
@@ -45,7 +45,7 @@ Requirements for v1.1 Log Rotation milestone. Each maps to roadmap phases.
 
 ### Testing
 
-- [ ] **TEST-01**: Unit tests for rotation logic
+- [x] **TEST-01**: Unit tests for rotation logic
 - [ ] **TEST-02**: Unit tests for compression
 - [ ] **TEST-03**: Unit tests for retention cleanup
 - [ ] **TEST-04**: Integration tests for full rotation workflow
@@ -54,9 +54,9 @@ Requirements for v1.1 Log Rotation milestone. Each maps to roadmap phases.
 
 ### Documentation
 
-- [ ] **DOCS-01**: README section on log rotation
-- [ ] **DOCS-02**: Configuration examples for rotation options
-- [ ] **DOCS-03**: Migration guide from basic file logging
+- [x] **DOCS-01**: README section on log rotation
+- [x] **DOCS-02**: Configuration examples for rotation options
+- [x] **DOCS-03**: Migration guide from basic file logging
 
 ## v2 Requirements
 
@@ -87,29 +87,29 @@ Which phases cover which requirements. Updated during roadmap creation.
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | ROTATE-01 | Phase 3 | Pending |
-| ROTATE-02 | Phase 2 | Pending |
+| ROTATE-02 | Phase 2 | Complete |
 | COMPRESS-01 | Phase 4 | Pending |
 | COMPRESS-02 | Phase 4 | Pending |
 | RETAIN-01 | Phase 5 | Pending |
 | RETAIN-02 | Phase 5 | Pending |
 | FILE-01 | Phase 3 | Pending |
 | FILE-02 | Phase 3 | Pending |
-| CONFIG-01 | Phase 2 | Pending |
-| CONFIG-02 | Phase 2 | Pending |
-| RELIABLE-01 | Phase 2 | Pending |
-| RELIABLE-02 | Phase 2 | Pending |
+| CONFIG-01 | Phase 2 | Complete |
+| CONFIG-02 | Phase 2 | Complete |
+| RELIABLE-01 | Phase 2 | Complete |
+| RELIABLE-02 | Phase 2 | Complete |
 | ERROR-01 | Phase 6 | Pending |
 | ERROR-02 | Phase 4 | Pending |
 | ERROR-03 | Phase 5 | Pending |
-| TEST-01 | Phase 2 | Pending |
+| TEST-01 | Phase 2 | Complete |
 | TEST-02 | Phase 4 | Pending |
 | TEST-03 | Phase 5 | Pending |
 | TEST-04 | Phase 6 | Pending |
 | TEST-05 | Phase 6 | Pending |
 | TEST-06 | Phase 6 | Pending |
-| DOCS-01 | Phase 6 | Pending |
-| DOCS-02 | Phase 6 | Pending |
-| DOCS-03 | Phase 6 | Pending |
+| DOCS-01 | Phase 2 | Complete |
+| DOCS-02 | Phase 2 | Complete |
+| DOCS-03 | Phase 2 | Complete |
 
 **Coverage:**
 - v1 requirements: 23 total
