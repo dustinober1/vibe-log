@@ -148,3 +148,44 @@ chmod 777 /path/to/logs
 # Start application with log directory owner
 sudo -u loguser node app.js
 ```
+
+## Directory Issues
+
+### Symptoms
+
+- `ENOENT: no such file or directory` errors
+- Directory deleted during runtime
+- External process cleaning up log directory
+
+### Diagnostic Steps
+
+1. Check if directory exists:
+   ```bash
+   ls -la /path/to/logs
+   ```
+
+2. Monitor directory changes:
+   ```bash
+   watch -n 5 'ls -la /path/to/logs'
+   ```
+
+3. Check for cleanup processes:
+   ```bash
+   ps aux | grep -E 'logrotate|tmpwatch|cleanup'
+   ```
+
+### Solutions
+
+**Manual recreation:**
+```bash
+mkdir -p /path/to/logs
+chmod 755 /path/to/logs
+```
+
+**Prevent external cleanup:**
+- Exclude log directory from tmpwatch/tmpreaper
+- Configure logrotate to use `copytruncate` instead of deleting
+- Set appropriate retention policy instead of external cleanup
+
+**Handle in application:**
+log-vibe will attempt to recreate the directory if it's deleted during rotation. Monitor for `error` events.
