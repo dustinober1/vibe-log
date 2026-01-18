@@ -60,6 +60,9 @@ let currentConfig: InternalConfig = { ...defaultConfig };
  */
 export function configure(config: Partial<LoggerConfig>): LoggerConfig {
     // File shorthand: convert file string to FileTransport
+    // Note: Rotation config only applies to file shorthand (config.file).
+    // For custom FileTransport instances, pass options directly to constructor:
+    // new FileTransport('./app.log', { maxSize: '100MB' })
     if (config.file && !config.transports) {
         const { file, rotation } = config;
 
