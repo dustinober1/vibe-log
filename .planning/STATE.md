@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T22:49:45Z
+**Last Updated:** 2026-01-18T22:54:41Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 6 - Error Handling & Production Hardening
-**Plan:** 01 of 6
+**Plan:** 03 of 6
 **Status:** Complete
-**Last activity:** 2026-01-18 — Completed plan 06-01 (EventEmitter error handling)
+**Last activity:** 2026-01-18 — Completed plan 06-03 (Edge case hardening)
 
-**Progress:** ████████░░░░░░░ 83% (5/6 phases complete, Phase 6: 1/6 plans complete)
+**Progress:** ████████░░░░░░░ 83% (5/6 phases complete, Phase 6: 3/6 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T22:49:45Z
-**Stopped at:** Completed Phase 6 Plan 01 (EventEmitter error handling)
+**Last session:** 2026-01-18T22:54:41Z
+**Stopped at:** Completed Phase 6 Plan 03 (Edge case hardening)
 **Resume file:** None
 
 ## Alignment Status
@@ -139,6 +139,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Export error classification utilities to public API | ErrorClass enum and classifyError function enable user error recovery strategies |
 | 2026-01-18 | ENOSPC errors set rotating=true to stop writes | Disk full errors should stop accepting writes immediately, not buffer in memory |
 | 2026-01-18 | EACCES errors set closed=true for permanent failure | Permission denied errors require user action; fail permanently with event emission |
+| 2026-01-18 | Dedicated disk-full flag separate from rotation flag | Added diskFull boolean to distinguish ENOSPC state from normal rotation state |
+| 2026-01-18 | Write gating with error state checks | log() checks isDiskFull() and isPermissionDenied() before attempting writes |
+| 2026-01-18 | Directory recreation on ENOENT during rotation | performRotation attempts to recreate directory if fs.rename fails with ENOENT |
+| 2026-01-18 | Graceful degradation for edge cases | All error states handled without crashing application, errors logged to console |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -278,10 +282,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 06-01: Add error classification utility
 - [x] Plan 06-01: Enhance stream error handler with event emission
 - [x] Plan 06-01: Update Transport interface error handling documentation
+- [x] Plan 06-02: Fix integration test isolation
+- [x] Plan 06-03: Add edge case hardening for production scenarios
 
 **Upcoming:**
-- [ ] Plan 06-02: Fix integration test isolation
-- [ ] Plan 06-03: Add edge case hardening
 - [ ] Plan 06-04: Create troubleshooting documentation
 - [ ] Plan 06-05: Create monitoring documentation
 - [ ] Plan 06-06: Add deployment examples
@@ -289,7 +293,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 5/6 phases complete (83%), Phase 6: 1/6 plans complete
+**v1.1 Log Rotation Milestone:** 5/6 phases complete (83%), Phase 6: 3/6 plans complete
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
@@ -297,4 +301,4 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 3 | Time-based Rotation | 5/5 | Complete |
 | 4 | Async Compression | 5/5 | Complete |
 | 5 | Retention Cleanup | 5/5 | Complete |
-| 6 | Error Handling & Production Hardening | 1/6 | In progress |
+| 6 | Error Handling & Production Hardening | 3/6 | In progress |
