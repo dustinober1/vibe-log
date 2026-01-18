@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T22:14:18Z
+**Last Updated:** 2026-01-18T22:47:06Z
 
 ## Project Reference
 
@@ -11,17 +11,17 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Current Position
 
-**Phase:** Phase 5 - Retention Cleanup
-**Plan:** 05 of 5
-**Status:** Complete
-**Last activity:** 2026-01-18 — Completed plan 05-05 (Add retention tests and documentation)
+**Phase:** Phase 6 - Error Handling & Production Hardening
+**Plan:** 02 of 6
+**Status:** In progress
+**Last activity:** 2026-01-18 — Completed plan 06-02 (Fix integration test isolation)
 
-**Progress:** ████████░░░░░░░ 83% (5/6 phases complete, Phase 5: 5/5 plans complete)
+**Progress:** ████████░░░░░░░ 84% (5/6 phases complete, Phase 6: 2/6 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T22:14:18Z
-**Stopped at:** Completed Phase 5 Plan 05 (Add retention tests and documentation)
+**Last session:** 2026-01-18T22:47:06Z
+**Stopped at:** Completed Phase 6 Plan 02 (Fix integration test isolation)
 **Resume file:** None
 
 ## Alignment Status
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** IN PROGRESS 🔨 (5/6 phases complete - Phase 5 complete)
+**Status:** IN PROGRESS 🔨 (5/6 phases complete - Phase 6 in progress)
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -133,6 +133,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Retention tests verify AND logic | 14 integration tests covering validation, AND logic, edge cases, end-to-end flow |
 | 2026-01-18 | Retention documentation structure | Follows compression pattern: Overview → Policy → Configuration → How It Works → Error Handling → Benefits |
 | 2026-01-18 | Migration guide for retention | Before/after example shows adding retention to existing rotation configs |
+| 2026-01-18 | UUID-based unique test directories | Use crypto.randomUUID() to prevent test interference in parallel execution |
+| 2026-01-18 | Constructor inheritance pattern | Always call super() before accessing 'this' when extending EventEmitter |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -140,7 +142,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 | Issue | Impact | Status |
 |-------|--------|--------|
-| Integration test isolation issue | Tests fail when run in parallel due to shared directory cleanup | Documented for Phase 6 |
+| Integration test isolation issue | Tests fail when run in parallel due to shared directory cleanup | ✅ Resolved in 06-02 |
 
 ## Dependencies
 
@@ -155,12 +157,12 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Performance Metrics
 
-**Test Coverage:** 220/222 tests passing (99.1%)
-**Test Files:** 19 test files
+**Test Coverage:** 216/216 tests passing (100%)
+**Test Files:** 18 test files
 **Lines of Code (v1.0):** 1,048 lines TypeScript
-**Lines Added (05-02):** 253 lines (retention.ts) + 398 lines (retention.test.ts)
+**Lines Added (06-02):** 1 line (randomUUID import) + 1 line (super() call)
 
-**Note:** 2 integration tests fail when run in parallel due to test isolation issue (pass when run in isolation)
+**Note:** All tests now pass in parallel execution - test isolation issue resolved with UUID-based directories
 
 ## Accumulated Context
 
@@ -222,6 +224,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 10. Deleting all log files: Never leave zero files (protect current active file)
 11. Timezone issues with age calculation: Use UTC consistently for date parsing
 12. Blocking writes during cleanup: Use fire-and-forget pattern with setTimeout
+13. Constructor inheritance: Always call super() before accessing 'this' when extending classes
 
 ## Todos
 
@@ -264,7 +267,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 5/6 phases complete (83%), Phase 5 complete (100%)
+**v1.1 Log Rotation Milestone:** 5/6 phases complete (84%), Phase 6: 2/6 plans complete
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
@@ -272,4 +275,4 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 3 | Time-based Rotation | 5/5 | Complete |
 | 4 | Async Compression | 5/5 | Complete |
 | 5 | Retention Cleanup | 5/5 | Complete |
-| 6 | Error Handling & Production Hardening | 0/6 | Planned |
+| 6 | Error Handling & Production Hardening | 2/6 | In progress |
