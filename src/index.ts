@@ -14,6 +14,10 @@ export type {
     ScopedLogger,
 } from './types';
 
+// Export transport types and classes
+export type { Transport } from './transports/transport';
+export { FileTransport, ConsoleTransport } from './transports';
+
 // Export main logger
 export { log, createScope } from './logger';
 
