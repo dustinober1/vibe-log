@@ -4,6 +4,15 @@
 export type LogLevel = 'debug' | 'info' | 'success' | 'warn' | 'error';
 
 /**
+ * Forward declaration for Transport interface
+ * (defined in transports/transport.ts to avoid circular dependency)
+ */
+export interface Transport {
+    log(formatted: string, entry: LogEntry, config: LoggerConfig): void;
+    close?(): Promise<void> | void;
+}
+
+/**
  * A single log entry
  */
 export interface LogEntry {
@@ -30,6 +39,12 @@ export interface LoggerConfig {
     maxDepth?: number;
     /** Timestamp format: 'time' for HH:MM:SS.mmm or 'iso' for ISO 8601 */
     timestampFormat?: 'time' | 'iso';
+    /** File path shorthand for single file logging */
+    file?: string;
+    /** Array of transports (empty = no output, undefined = default console) */
+    transports?: Transport[];
+    /** Whether to include console transport in default transports */
+    console?: boolean;
 }
 
 /**
