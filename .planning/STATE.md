@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T19:48:57Z
+**Last Updated:** 2026-01-18T20:00:00Z
 
 ## Project Reference
 
@@ -11,17 +11,17 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Current Position
 
-**Phase:** Phase 3 - Time-based Rotation
-**Plan:** 05 of 5
-**Status:** Phase complete
-**Last activity:** 2026-01-18 — Completed 03-05-PLAN.md (Document Time-based Rotation Features)
+**Phase:** Phase 4 - Async Compression
+**Plan:** 01 of 5
+**Status:** Phase planned
+**Last activity:** 2026-01-18 — Created phase plans for async compression (5 plans in 4 waves)
 
-**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete)
+**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete, Phase 4 planned)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T19:48:57Z
-**Stopped at:** Completed 03-05-PLAN.md (Document Time-based Rotation Features) - Phase 3 complete
+**Last session:** 2026-01-18T20:00:00Z
+**Stopped at:** Phase 4 planning complete, ready for execution
 **Resume file:** None
 
 ## Alignment Status
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** IN PROGRESS 🔨 (3.0/6 phases complete - Phase 3 done)
+**Status:** IN PROGRESS 🔨 (3.0/6 phases complete - Phase 3 done, Phase 4 planned)
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -44,7 +44,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Phase 4: Async gzip compression (5 plans)
+- Phase 4: Async gzip compression (5 plans in 4 waves - READY)
 - Phase 5: Retention cleanup (5 plans)
 - Phase 6: Error handling and documentation (6 plans)
 
@@ -99,6 +99,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Pass pattern field in configure() | configure() passes rotation.pattern to FileTransport constructor |
 | 2026-01-18 | Documentation structure for rotation features | Conceptual → API reference → Migration guide for clear adoption path |
 | 2026-01-18 | Three migration scenarios | Cover add daily to size-based, add to no rotation, migrate to hybrid |
+| 2026-01-18 | 10ms compression delay | Avoid CPU spike during active logging periods |
+| 2026-01-18 | Stream pipeline for compression | Use pipeline() for proper error handling and automatic cleanup |
+| 2026-01-18 | Failed file handling | Move to failed/ subdirectory for manual inspection |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -144,6 +147,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - TDD cycle: RED (failing tests) → GREEN (implementation) → REFACTOR (edge cases)
 - Utility extraction: Move reusable functions to utils/ for public API access
 - Public API integration: Pass configuration fields through to underlying implementations
+- Stream pipeline compression: Use pipeline() from node:stream/promises for robust error handling
+- Fire-and-forget compression: Schedule with 10ms setTimeout, no await in rotation flow
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -151,13 +156,18 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Hybrid strategy: size-based AND time-based rotation supported
 - Non-blocking compression critical for performance
 - Utility functions exported from utils/rotation for reusability
+- Compression utilities in utils/compression for modularity
 
 **Known Pitfalls to Avoid:**
 1. Stream data loss: use `stream.end()` not `stream.destroy()`
 2. File handle leaks: try-finally cleanup, track open handles
-3. Event loop blocking: defer compression with setImmediate
+3. Event loop blocking: defer compression with setTimeout (10ms delay)
 4. Multi-process races: document as unsupported for v1.1
 5. Test directory interference: Use dedicated directories for different test suites
+6. Manual stream error handling: Use pipeline() instead of .pipe() chaining
+7. Memory issues with large files: Use stream-based compression, not zlib.gzip()
+8. Partial .gz files on error: pipeline() automatically cleans up on error
+9. Cross-device rename failures: Handle EXDEV error, leave file in place
 
 ## Todos
 
@@ -183,9 +193,14 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 03-04: Export generateRotatedName from utils/rotation
 - [x] Plan 03-04: Add verification tests for FILE-01 and FILE-02 requirements
 - [x] Plan 03-05: Document time-based rotation features
+- [x] Plan 04-01: Extend RotationConfig with compressionLevel field
+- [x] Plan 04-02: Create compressRotatedFile utility function
+- [x] Plan 04-03: Add compression scheduling to FileTransport
+- [x] Plan 04-04: Add comprehensive tests for compression (TDD)
+- [x] Plan 04-05: Document compression features
 
 **Upcoming:**
-- [ ] Phase 4: Async gzip compression
+- [ ] Execute Phase 4: Async gzip compression
 - [ ] Phase 5: Retention cleanup
 - [ ] Phase 6: Error handling and documentation
 
