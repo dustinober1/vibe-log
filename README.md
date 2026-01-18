@@ -205,6 +205,91 @@ log.info('App', 'Now also writing to file');
 
 ---
 
+## Log Rotation
+
+log-vibe supports automatic log rotation based on file size. When a log file exceeds the configured size threshold, it's automatically rotated to a date-stamped archive and a new log file is created.
+
+### Configuration
+
+Enable rotation via the `rotation` option:
+
+```typescript
+import { configure } from 'log-vibe';
+
+configure({
+    file: './logs/app.log',
+    rotation: {
+        maxSize: '100MB'  // Rotate when file exceeds 100MB
+    }
+});
+```
+
+### Size Format
+
+The `maxSize` option accepts:
+
+- **String**: Human-readable format like `'100MB'`, `'1.5GB'`, `'500KB'`
+- **Number**: Raw bytes like `104857600` (100MB)
+
+Default: `'100MB'` if not specified.
+
+### Rotated File Naming
+
+Rotated files follow this pattern:
+
+```
+{basename}-{YYYY-MM-DD}.{ext}.{sequence}
+```
+
+Examples:
+- `app-2026-01-18.log.1` (first rotation on Jan 18, 2026)
+- `app-2026-01-18.log.2` (second rotation on same day)
+- `app-2026-01-19.log.1` (first rotation on Jan 19, 2026)
+
+**Timezone**: Uses UTC to ensure consistency across servers.
+
+### Backward Compatibility
+
+Rotation is **opt-in**. Existing code without rotation config continues working unchanged:
+
+```typescript
+// No rotation — logs grow indefinitely
+configure({ file: './app.log' });
+
+// With rotation — logs are automatically rotated
+configure({
+    file: './app.log',
+    rotation: { maxSize: '100MB' }
+});
+```
+
+### Custom FileTransport with Rotation
+
+For advanced use cases with custom transports:
+
+```typescript
+import { configure } from 'log-vibe';
+import { FileTransport } from 'log-vibe/transports';
+
+const transport = new FileTransport('./logs/app.log', {
+    maxSize: '50MB'
+});
+
+configure({ transports: [transport] });
+```
+
+### How It Works
+
+1. **Size Check**: After each log write, the file size is checked
+2. **Rotation Trigger**: If size + write ≥ maxSize, rotation starts
+3. **Write Gating**: Concurrent writes are blocked during rotation
+4. **Atomic Rotation**: Stream closes → file renamed → new stream created
+5. **Resume**: Logging continues with new file
+
+**Important**: Rotation is atomic — no log entries are lost during rotation.
+
+---
+
 ## API
 
 ### Log Levels
@@ -290,6 +375,7 @@ configure({ maxDepth: 5 });
 | `maxDepth` | `number` | `10` | Maximum depth for object printing |
 | `timestampFormat` | `'time' \| 'iso'` | `'time'` | Timestamp format |
 | `file` | `string` | `undefined` | Path to log file (creates FileTransport) |
+| `rotation` | `RotationConfig` | `undefined` | Rotation config for file transport |
 | `console` | `boolean` | `true` | Enable console transport |
 | `transports` | `Transport[]` | `[ConsoleTransport]` | Custom transport instances |
 
