@@ -11,12 +11,12 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Current Position
 
-**Phase:** Phase 6 - Error Handling & Production Hardening
-**Plan:** 06 of 6
-**Status:** Complete
-**Last activity:** 2026-01-18 — Phase 6 verified (39/39 must-haves)
+**Phase:** Phase 07 - Public API Integration Fix
+**Plan:** 07 of 7
+**Status:** In Progress
+**Last activity:** 2026-01-18 — Gap audit identified critical configure() passthrough issue
 
-**Progress:** ███████████ 100% (6/6 phases complete, v1.1 milestone COMPLETE)
+**Progress:** ██████████░ 85.7% (6/7 phases complete, Phase 07 blocks v1.1 release)
 
 ## Session Continuity
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** VERIFIED ✅ (all 6 phases finished, 39/39 must-haves verified, ready for release)
+**Status:** ⚠️ GAP FOUND - Critical public API integration issue (Phase 07 required)
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -44,7 +44,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Milestone audit (verify E2E flows, cross-phase integration)
+- Implement Phase 07: Public API Integration Fix
+- Verify audit passes (integration 9/9, flows 4/4)
 - v1.1 release preparation
 
 ## Decisions Made
@@ -147,6 +148,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Production deployment examples organized by platform | Docker, Kubernetes, and cloud logging patterns documented with examples |
 | 2026-01-18 | Dedicated logging server pattern for multi-process | Documented HTTP-based logging server architecture for multi-process scenarios |
 | 2026-01-18 | Documentation cross-linking pattern | Links to TROUBLESHOOTING.md and MONITORING.md in multiple sections |
+| 2026-01-18 | Phase 07 created for critical gap | configure() passthrough gap requires dedicated fix phase before v1.1 release |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -155,6 +157,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | Issue | Impact | Status |
 |-------|--------|--------|
 | Integration test isolation issue | Tests fail when run in parallel due to shared directory cleanup | ✅ Resolved in 06-02 |
+| configure() passthrough gap | Users cannot access compression/retention via shorthand API | 🔧 Phase 07 required |
 
 ## Dependencies
 
@@ -292,12 +295,18 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 06-05: Create monitoring documentation
 - [x] Plan 06-06: Add deployment examples
 
+**Immediate (Phase 07):**
+- [ ] Update src/config.ts type definition to include compressionLevel, maxFiles, maxAge
+- [ ] Add field passthrough logic in configure() function
+- [ ] Add test for compressionLevel passthrough
+- [ ] Add test for maxFiles/maxAge passthrough
+
 **Upcoming:**
 - [ ] v1.1 release preparation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 6/6 phases complete (100%), VERIFIED ✓
+**v1.1 Log Rotation Milestone:** 6/7 phases complete (85.7%), GAP FOUND ⚠️
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
@@ -305,6 +314,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 3 | Time-based Rotation | 5/5 | Complete ✓ |
 | 4 | Async Compression | 5/5 | Complete ✓ |
 | 5 | Retention Cleanup | 5/5 | Complete ✓ |
-| 6 | Error Handling & Production Hardening | 6/6 | Verified ✓ |
+| 6 | Error Handling & Production Hardening | 6/6 | Complete ✓ |
+| 7 | Public API Integration Fix | 1/1 | Planned 🔧 |
 
-**v1.1 Milestone Status:** READY FOR AUDIT
+**v1.1 Milestone Status:** PHASE 07 REQUIRED - Critical configure() passthrough gap
