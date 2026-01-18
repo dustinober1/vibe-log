@@ -308,3 +308,153 @@ async function checkLogFreshness(logFile: string, maxAgeMinutes = 10) {
   }
 }
 ```
+
+## Rotation Monitoring
+
+### Rotation Status
+
+Monitor rotation activity to ensure it's working:
+
+```typescript
+import fs from 'fs/promises';
+
+async function getRotationStatus(logDir: string, baseName: string) {
+  const files = await fs.readdir(logDir);
+  const rotatedFiles = files.filter(f => f.includes(`${baseName}-`) && f.includes('.log.'));
+
+  const rotationCount = rotatedFiles.length;
+  const latestRotated = rotatedFiles.sort().reverse()[0];
+
+  return {
+    rotationCount,
+    latestRotated,
+    lastRotationDate: latestRotated
+      ? (await fs.stat(path.join(logDir, latestRotated))).mtime
+      : null
+  };
+}
+
+// Monitor rotation
+setInterval(async () => {
+  const status = await getRotationStatus('./logs', 'app');
+  console.log('[MONITOR] Rotation status:', {
+    totalRotations: status.rotationCount,
+    latestRotation: status.lastRotationDate
+  });
+
+  // Alert if no rotation in 24 hours (for active applications)
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  if (status.lastRotationDate && status.lastRotationDate < dayAgo) {
+    console.error('[ALERT] No rotation in 24 hours - rotation may be broken');
+  }
+}, 300000); // Check every 5 minutes
+```
+
+### Rotation Failure Detection
+
+Detect when rotation fails:
+
+```typescript
+import { FileTransport } from 'log-vibe';
+
+const transport = new FileTransport('./logs/app.log', {
+  maxSize: '100MB'
+});
+
+let rotationFailures = 0;
+
+transport.on('error', (err) => {
+  if (err.code === 'ENOSPC' || err.code === 'EACCES') {
+    rotationFailures++;
+    console.error(`[ALERT] Rotation failure #${rotationFailures}:`, err.code);
+  }
+});
+```
+
+## Disk Usage Monitoring
+
+### Disk Space Checks
+
+Monitor disk space to prevent ENOSPC errors:
+
+```typescript
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+
+async function getDiskUsage(path: string) {
+  try {
+    const { stdout } = await execAsync(`df -h "${path}"`);
+    const lines = stdout.split('\n');
+    const data = lines[1].split(/\s+/);
+
+    return {
+      filesystem: data[0],
+      size: data[1],
+      used: data[2],
+      available: data[3],
+      usagePercent: parseInt(data[4].replace('%', '')),
+      mountpoint: data[5]
+    };
+  } catch (error) {
+    console.error('Failed to get disk usage:', error);
+    return null;
+  }
+}
+
+// Monitor disk usage
+setInterval(async () => {
+  const usage = await getDiskUsage('./logs');
+
+  if (usage) {
+    console.log('[MONITOR] Disk usage:', usage);
+
+    // Alert at 80% warning
+    if (usage.usagePercent >= 80) {
+      console.error(`[WARNING] Disk usage at ${usage.usagePercent}%`);
+    }
+
+    // Critical alert at 90%
+    if (usage.usagePercent >= 90) {
+      console.error(`[CRITICAL] Disk usage at ${usage.usagePercent}% - immediate action required`);
+      sendAlert('disk-space-critical', {
+        usagePercent: usage.usagePercent,
+        available: usage.available
+      });
+    }
+  }
+}, 300000); // Check every 5 minutes
+```
+
+### Log Directory Size
+
+Monitor total log directory size:
+
+```bash
+#!/bin/bash
+# check-log-size.sh
+
+LOG_DIR="./logs"
+MAX_SIZE=$((10 * 1024 * 1024 * 1024))  # 10GB
+
+# Get directory size (Linux)
+SIZE=$(du -sb "$LOG_DIR" | cut -f1)
+
+# Get directory size (macOS)
+if [ -z "$SIZE" ]; then
+  SIZE=$(du -s "$LOG_DIR" | cut -f1)
+  SIZE=$((SIZE * 512))  # Convert blocks to bytes
+fi
+
+SIZE_GB=$((SIZE / 1024 / 1024 / 1024))
+
+echo "Log directory size: ${SIZE_GB}GB"
+
+if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+  echo "CRITICAL: Log directory exceeds ${MAX_SIZE} bytes"
+  exit 2
+fi
+
+exit 0
+```
