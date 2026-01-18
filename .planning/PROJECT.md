@@ -26,15 +26,31 @@ A beautiful zero-dependency logging library for Node.js with transport abstracti
 
 ### Active
 
-(No active requirements — planning for v1.1 required)
+- [ ] Daily log rotation at midnight
+- [ ] Size-based rotation fallback (>100MB)
+- [ ] Retention policy (delete old logs after N days)
+- [ ] Gzip compression of rotated files
+- [ ] Rotation configuration via `configure()`
+
+---
+
+## Current Milestone: v1.1 Log Rotation
+
+**Goal:** Add automatic log rotation with daily/size-based triggers, compression, and cleanup for production-ready file logging.
+
+**Target features:**
+- Daily rotation at midnight with date-stamped filenames (`app-2026-01-18.log`)
+- Size-based rotation when single day exceeds 100MB
+- Configurable retention period (default: 14 days)
+- Gzip compression of rotated files to save space
+- Backward compatible configuration via `configure({ file, rotation })`
 
 ### Out of Scope
 
-- Log rotation — defer to v1.1
 - Remote service transports (Datadog, ELK) — users can build via custom transport API
-- Built-in compression — defer to v1.1
 - Transport buffering/batching — not aligned with simplicity philosophy
 - Log aggregation — out of scope for logging library
+- Complex rotation patterns (hourly, weekly) — keep it simple for v1.1
 
 ## Context
 
@@ -80,4 +96,4 @@ A beautiful zero-dependency logging library for Node.js with transport abstracti
 | `configure()` returns `LoggerConfig` | File/transports/console are optional | ✓ Type safety maintained |
 
 ---
-*Last updated: 2026-01-18 after v1.0 milestone*
+*Last updated: 2026-01-18 after v1.1 milestone initiation*
