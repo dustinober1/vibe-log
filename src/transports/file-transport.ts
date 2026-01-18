@@ -384,21 +384,28 @@ export class FileTransport implements Transport {
     /**
      * Check file size and trigger rotation if threshold exceeded
      *
+     * @param forceRotation - Force rotation regardless of size (for time-based rotation)
+     *
      * @remarks
      * Uses tracked file size to determine if rotation is needed.
      * Deduplicates concurrent rotation checks by tracking rotationInProgress promise.
      *
      * This method is async but called fire-and-forget from log() to avoid
      * blocking writes. The rotating flag ensures no writes during rotation.
+     *
+     * Time-based rotation: When called with forceRotation=true from
+     * scheduleMidnightRotation callback, this performs rotation regardless of file size.
      */
-    private async checkSizeAndRotate(): Promise<void> {
+    private async checkSizeAndRotate(forceRotation = false): Promise<void> {
         // Skip if rotation not enabled or already rotating
         if (!this.rotationEnabled || this.rotating || this.rotationInProgress) {
             return;
         }
 
-        // Check if rotation needed (using tracked size)
-        if (this.currentFileSize >= this.maxSize!) {
+        // Check if rotation needed (using tracked size for size-based)
+        const needSizeRotation = this.maxSize !== undefined && this.currentFileSize >= this.maxSize;
+
+        if (forceRotation || needSizeRotation) {
             // Set write gate BEFORE rotation starts
             this.rotating = true;
 
@@ -413,5 +420,37 @@ export class FileTransport implements Transport {
                 this.rotationInProgress = undefined;
             }
         }
+    }
+
+    /**
+     * Schedule midnight rotation using recursive setTimeout
+     *
+     * @remarks
+     * This method implements recursive timer scheduling for daily rotation at midnight UTC.
+     * Using setTimeout instead of setInterval prevents timing drift because each timeout
+     * is calculated fresh based on current time.
+     *
+     * Integration with existing rotation:
+     * - Calls checkSizeAndRotate(true) to force rotation at midnight
+     * - This allows hybrid rotation (size + time) to work seamlessly
+     *
+     * Error handling prevents midnight rotation failures from crashing the application.
+     * Errors are logged to console as a fallback.
+     */
+    private scheduleMidnightRotation(): void {
+        // Calculate milliseconds until next midnight UTC
+        const msUntilMidnight = getMsUntilNextMidnightUTC();
+
+        // Schedule rotation callback
+        this.rotationTimer = setTimeout(() => {
+            // Trigger rotation via existing checkSizeAndRotate
+            // Force rotation for time-based trigger
+            this.checkSizeAndRotate(true).catch((err) => {
+                console.error(`[FileTransport] Midnight rotation error: ${err instanceof Error ? err.message : String(err)}`);
+            });
+
+            // Reschedule for next day (recursive setTimeout prevents drift)
+            this.scheduleMidnightRotation();
+        }, msUntilMidnight);
     }
 }
