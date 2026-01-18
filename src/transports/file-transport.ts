@@ -127,6 +127,7 @@ export class FileTransport extends EventEmitter implements Transport {
     private readonly timeBasedRotationEnabled: boolean;
     private rotating = false;              // Write gate flag
     private rotationInProgress?: Promise<void>;  // Track rotation promise
+    private diskFull = false;              // Disk full error flag (ENOSPC)
     private currentFileSize = 0;           // Track current file size
     private rotationTimer?: NodeJS.Timeout;
     // Field reserved for future use in tracking rotation date
@@ -134,6 +135,20 @@ export class FileTransport extends EventEmitter implements Transport {
     private readonly compressionLevel?: number;  // Gzip compression level (1-9)
     private readonly maxFiles?: number;  // Maximum number of log files to keep
     private readonly maxAge?: number;  // Maximum age of log files in days
+
+    /**
+     * Check if disk is full (ENOSPC error occurred)
+     */
+    private isDiskFull(): boolean {
+        return this.diskFull;
+    }
+
+    /**
+     * Check if permission was denied (EACCES error occurred)
+     */
+    private isPermissionDenied(): boolean {
+        return this.closed;
+    }
 
     /**
      * Create a new file transport
@@ -258,6 +273,11 @@ export class FileTransport extends EventEmitter implements Transport {
      * This method remains synchronous. Rotation happens asynchronously.
      */
     log(formatted: string, _entry: LogEntry, _config: LoggerConfig): void {
+        // Check error state flags before writing
+        if (this.isDiskFull() || this.isPermissionDenied()) {
+            return;  // Skip writes on error state
+        }
+
         // Write gating: skip writes during rotation
         if (this.rotating) {
             return;
@@ -353,6 +373,24 @@ export class FileTransport extends EventEmitter implements Transport {
     }
 
     /**
+     * Attempt to recreate log directory if it was deleted
+     *
+     * @returns true if recreation succeeded, false otherwise
+     */
+    private recreateDirectory(): boolean {
+        const dir = path.dirname(this.filePath);
+        try {
+            fs.mkdirSync(dir, { recursive: true });
+            console.error(`[FileTransport] Recreated directory: ${dir}`);
+            return true;
+        } catch (error) {
+            const err = error as NodeJS.ErrnoException;
+            console.error(`[FileTransport] Failed to recreate directory: ${err.message}`);
+            return false;
+        }
+    }
+
+    /**
      * Attach error handler to a write stream
      *
      * @param stream - Write stream to attach handler to
@@ -372,7 +410,7 @@ export class FileTransport extends EventEmitter implements Transport {
             // 3. Error-specific handling
             if (err.code === 'ENOSPC') {
                 // Disk full - stop accepting writes
-                this.rotating = true;
+                this.diskFull = true;
                 this.emit('disk-full', err);
             } else if (err.code === 'EACCES') {
                 // Permission denied - fail permanently
@@ -413,7 +451,46 @@ export class FileTransport extends EventEmitter implements Transport {
 
                 fs.rename(this.filePath, rotatedPath, (renameErr: NodeJS.ErrnoException | null) => {
                     if (renameErr) {
-                        // Rename failed — try to recover by reopening original file
+                        // Handle directory deletion during runtime
+                        if (renameErr.code === 'ENOENT') {
+                            // Attempt directory recreation
+                            if (this.recreateDirectory()) {
+                                // Retry the rename after recreation
+                                fs.rename(this.filePath, rotatedPath, (retryErr: NodeJS.ErrnoException | null) => {
+                                    if (retryErr) {
+                                        this.stream = this.createWriteStream(this.filePath);
+                                        reject(retryErr);
+                                        return;
+                                    }
+                                    // Success after recreation - continue with rotation
+                                    this.stream = this.createWriteStream(this.filePath);
+                                    this.currentFileSize = 0;
+
+                                    // Schedule compression with 10ms delay (fire-and-forget)
+                                    if (this.compressionLevel !== undefined) {
+                                        setTimeout(() => {
+                                            compressRotatedFile(rotatedPath, this.compressionLevel!)
+                                                .catch(() => {
+                                                    // Errors already logged in compressRotatedFile
+                                                });
+                                        }, 10);
+                                    }
+
+                                    // Trigger retention cleanup if configured
+                                    if (this.maxFiles !== undefined && this.maxAge !== undefined) {
+                                        setTimeout(() => {
+                                            this.performRetentionCleanup().catch((err) => {
+                                                console.error(`[FileTransport] Retention cleanup error: ${err instanceof Error ? err.message : String(err)}`);
+                                            });
+                                        }, 20);
+                                    }
+
+                                    resolve();
+                                });
+                                return;
+                            }
+                        }
+                        // Other errors or recreation failed — try to recover
                         this.stream = this.createWriteStream(this.filePath);
                         reject(renameErr);
                         return;
