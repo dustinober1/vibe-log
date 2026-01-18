@@ -6,7 +6,7 @@ import {
     getSortedRotatedFiles,
     calculateAgeInDays,
     cleanupOldLogs
-} from './retention';
+} from '../src/utils/retention';
 
 describe('Retention Utility Functions', () => {
     const TEST_DIR = path.join(__dirname, '../../test-logs-retention');
@@ -55,10 +55,10 @@ describe('Retention Utility Functions', () => {
             const result = parseRotatedDate(filename, 'app', '.log');
 
             expect(result).toBeDefined();
-            // Should be midnight UTC
-            expect(result?.getHours()).toBe(0);
-            expect(result?.getMinutes()).toBe(0);
-            expect(result?.getSeconds()).toBe(0);
+            // Should be midnight UTC (use UTC getters)
+            expect(result?.getUTCHours()).toBe(0);
+            expect(result?.getUTCMinutes()).toBe(0);
+            expect(result?.getUTCSeconds()).toBe(0);
         });
 
         it('should return undefined for filename with different base', () => {
