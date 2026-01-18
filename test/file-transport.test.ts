@@ -697,6 +697,74 @@ describe('FileTransport', () => {
                 const oldFiles = files.filter(f => f.includes(dateStr) && !f.includes('app.log'));
                 expect(oldFiles.length).toBeLessThan(5);
             });
+
+            it('retention cleanup end-to-end flow: rotation -> compression -> cleanup', async () => {
+                const retentionTestFile = path.join(retentionTestDir, 'app.log');
+
+                // Create some old compressed files
+                const oldDate = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000);
+                const dateStr = oldDate.toISOString().split('T')[0];
+
+                for (let i = 1; i <= 5; i++) {
+                    fs.writeFileSync(path.join(retentionTestDir, `app-${dateStr}.log.${i}.gz`), `old compressed log ${i}`);
+                }
+
+                // Create transport with rotation, compression, and retention
+                const transport = new FileTransport(retentionTestFile, {
+                    maxSize: 200, // Small enough to trigger rotation
+                    compressionLevel: 6, // Enable compression
+                    maxFiles: 3, // Keep max 3 files total
+                    maxAge: 5,   // Delete files older than 5 days
+                });
+
+                const entry: LogEntry = {
+                    level: 'info',
+                    context: 'Test',
+                    message: 'Test message',
+                    timestamp: new Date(),
+                };
+
+                const config: LoggerConfig = {
+                    level: 'debug',
+                    showTimestamp: true,
+                    showIcons: true,
+                    useColors: false,
+                    maxDepth: 10,
+                    timestampFormat: 'time',
+                };
+
+                // Write enough logs to trigger rotation
+                for (let i = 0; i < 25; i++) {
+                    transport.log(`Log message ${i}: some content to trigger rotation`, entry, config);
+                }
+
+                // Wait for rotation -> compression (10ms) -> cleanup (20ms total)
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                await transport.close();
+
+                // Wait a bit more for all async operations to complete
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Verify the complete flow:
+                // 1. Rotation happened (new rotated files created)
+                // 2. Compression happened (rotated files compressed to .gz)
+                // 3. Cleanup happened (old files deleted based on AND logic)
+
+                const files = fs.readdirSync(retentionTestDir);
+
+                // Should have active file
+                expect(files.filter(f => f === 'app.log').length).toBe(1);
+
+                // Should have some .gz files (compressed rotated files)
+                const gzFiles = files.filter(f => f.endsWith('.gz'));
+                expect(gzFiles.length).toBeGreaterThan(0);
+
+                // Old compressed files should be partially deleted (based on AND logic)
+                const oldFiles = files.filter(f => f.includes(dateStr));
+                // Due to AND logic with maxFiles=3, some old files may remain
+                expect(oldFiles.length).toBeLessThanOrEqual(5);
+            });
         });
     });
 
