@@ -225,6 +225,19 @@ describe('config', () => {
 
             expect(() => log.info('test', 'Test message without rotation')).not.toThrow();
         });
+
+        it('should pass compressionLevel to FileTransport', () => {
+            configure({
+                file: path.join(testLogsDir, 'compression.log'),
+                rotation: { compressionLevel: 9 }
+            });
+
+            const config = getConfig();
+            expect(config.rotation?.compressionLevel).toBe(9);
+
+            // Verify the transport was created and can log
+            expect(() => log.info('test', 'Test message with compression')).not.toThrow();
+        });
     });
 
     describe('generateRotatedName verification (FILE-01 and FILE-02)', () => {
