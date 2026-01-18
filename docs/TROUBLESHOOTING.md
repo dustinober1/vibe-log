@@ -286,3 +286,50 @@ transport.on('error', (err) => {
 
 configure({ transports: [transport] });
 ```
+
+## Rotation Not Working
+
+### Symptoms
+
+- Log file grows beyond maxSize
+- No rotated files created
+- Daily rotation doesn't occur
+
+### Diagnostic Steps
+
+1. Verify rotation config:
+   ```bash
+   grep -A 5 "rotation:" config.js
+   ```
+
+2. Check current file size:
+   ```bash
+   ls -lh /path/to/logs/app.log
+   ```
+
+3. Look for rotated files:
+   ```bash
+   ls -lh /path/to/logs/app-*.log.*
+   ```
+
+### Solutions
+
+**Enable rotation:**
+```typescript
+configure({
+  file: './logs/app.log',
+  rotation: {
+    maxSize: '100MB',    // Size-based
+    pattern: 'daily'     // Time-based
+  }
+});
+```
+
+**Check size format:**
+- Valid: `'100MB'`, `'1.5GB'`, `104857600` (bytes)
+- Invalid: `'100'` (needs unit), `'100 mb'` (no space)
+
+**Verify rotation isn't blocked by errors:**
+- Check console for rotation errors
+- Listen for 'error' events on transport
+- Ensure disk isn't full (rotation requires disk space)
