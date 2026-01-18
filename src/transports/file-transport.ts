@@ -93,7 +93,7 @@ export class FileTransport implements Transport {
     private rotationInProgress?: Promise<void>;  // Track rotation promise
     private currentFileSize = 0;           // Track current file size
     private rotationTimer?: NodeJS.Timeout;
-    // @ts-expect-error: Field reserved for future use in tracking rotation date
+    // Field reserved for future use in tracking rotation date
     private lastRotationDate?: Date;
 
     /**
