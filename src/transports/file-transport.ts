@@ -3,6 +3,7 @@ import path from 'path';
 import type { Transport } from './transport';
 import type { LogEntry, LoggerConfig } from '../types';
 import { getMsUntilNextMidnightUTC, generateRotatedName } from '../utils/rotation';
+import { compressRotatedFile } from '../utils/compression';
 
 // Constants for file stream configuration
 const DEFAULT_FILE_MODE = 0o666; // read/write for all (modified by umask)
@@ -80,6 +81,8 @@ interface FileTransportOptions {
     maxSize?: string | number;
     /** Time-based rotation pattern (e.g., 'daily' for midnight UTC rotation) */
     pattern?: 'daily';
+    /** Gzip compression level for rotated log files (1-9, default 6) */
+    compressionLevel?: number;
 }
 
 export class FileTransport implements Transport {
@@ -95,6 +98,7 @@ export class FileTransport implements Transport {
     private rotationTimer?: NodeJS.Timeout;
     // Field reserved for future use in tracking rotation date
     private lastRotationDate?: Date;
+    private readonly compressionLevel?: number;  // Gzip compression level (1-9)
 
     /**
      * Create a new file transport
@@ -124,6 +128,8 @@ export class FileTransport implements Transport {
         // Parse rotation config if provided
         this.rotationEnabled = false;
         this.timeBasedRotationEnabled = false;
+        this.compressionLevel = undefined;
+
         if (options !== undefined && options.maxSize !== undefined) {
             this.maxSize = parseSize(options.maxSize);
             this.rotationEnabled = true;
@@ -132,6 +138,15 @@ export class FileTransport implements Transport {
             this.timeBasedRotationEnabled = true;
             // Enable rotation for time-based pattern
             this.rotationEnabled = true;
+        }
+
+        // Parse compression level if provided
+        if (options !== undefined && options.compressionLevel !== undefined) {
+            const level = options.compressionLevel;
+            if (level < 1 || level > 9) {
+                throw new Error(`Compression level must be between 1 and 9, got ${level}`);
+            }
+            this.compressionLevel = level;
         }
 
         // Ensure directory exists (Node.js >= 10.12.0)
@@ -334,6 +349,17 @@ export class FileTransport implements Transport {
 
                     // Step 4: Reset file size counter to 0 for new file
                     this.currentFileSize = 0;
+
+                    // Step 5: Schedule compression with 10ms delay (fire-and-forget)
+                    if (this.compressionLevel !== undefined) {
+                        setTimeout(() => {
+                            compressRotatedFile(rotatedPath, this.compressionLevel!)
+                                .catch(() => {
+                                    // Errors already logged in compressRotatedFile
+                                    // This catch is just to prevent unhandled promise rejection
+                                });
+                        }, 10);  // 10ms delay to avoid CPU spike during active logging
+                    }
 
                     resolve();
                 });
