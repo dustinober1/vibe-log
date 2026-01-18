@@ -2,35 +2,63 @@
 
 **Last Updated:** 2026-01-18
 
+## Project Reference
+
+See: .planning/PROJECT.md (updated 2026-01-18)
+
+**Core value:** Beautiful, flexible logging without dependencies
+**Current focus:** Planning v1.1 (Log Rotation)
+
 ## Current Position
 
-**Phase:** Phase 1 - Transport System **COMPLETE ✅**
-**Verification:** PASSED (24/24 must-haves verified - 100%)
-**Completion Date:** 2026-01-18
-**Status:** All 4 plans executed, goal verified, requirements complete
+**Phase:** Phase 2 - Log Rotation (Planning Required)
+**Plan:** Not started
+**Status:** Ready to plan
+**Last activity:** 2026-01-18 — v1.0 milestone complete
 
-**Progress:** ████████████████████ 100% (4/4 plans complete)
+**Progress:** ████████░░░░░░░░░░░ 20% (4/20 phases complete: Phase 1 of 5)
 
-## Project Overview
+## Session Continuity
 
-**Vision:** Beautiful, flexible logging without dependencies
-**Approach:** Transport abstraction with zero runtime dependencies
-**Current Focus:** Phase 1 - Transport System
+**Last session:** 2026-01-18T18:28:48Z
+**Stopped at:** v1.0 milestone complete, ready for v1.1 planning
+**Resume file:** None
+
+## Alignment Status
+
+**v1.0 Scope:** Transport abstraction and file logging
+**Status:** SHIPPED ✅
+
+**Completed Work:**
+- Transport interface defined with log() and optional close() methods
+- LoggerConfig extended with file, transports, console fields
+- FileTransport implemented using Node.js streams
+- ConsoleTransport implemented with level-aware console method routing
+- configure() extended with file shorthand and transports array support
+- writeLog() updated to iterate over transports with error handling
+- Test suite created with 97.24% coverage (124 passing tests)
+- README updated with transport documentation and migration guide
+- Backward compatibility maintained (zero breaking changes)
+
+**Next Steps:**
+- v1.0 complete ✅
+- Recommended: `/gsd:new-milestone` — Start v1.1 planning (questioning → research → requirements → roadmap)
 
 ## Decisions Made
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
-| 2026-01-18 | Use forward reference pattern for Transport interface | Avoids circular dependency between types.ts and transport.ts while maintaining type safety |
-| 2026-01-18 | Transport.log() must be synchronous | Logging must not block; async operations handled internally by transport implementations |
-| 2026-01-18 | Transport receives both formatted string AND raw LogEntry | Enables simple use cases (write string) and advanced (custom formatting) |
-| 2026-01-18 | Created InternalConfig type for backward compatibility | Separates required core fields from optional transport fields, allowing existing code to work unchanged |
-| 2026-01-18 | FileTransport uses fs.createWriteStream() for async writes | Provides efficient non-blocking file I/O with built-in backpressure handling |
-| 2026-01-18 | Stream error handlers prevent Node.js crashes | Unhandled stream error events terminate Node.js process, must attach error handlers |
-| 2026-01-18 | ConsoleTransport maps levels to console methods | Follows same pattern as existing logger.ts for consistency |
-| 2026-01-18 | configure() returns LoggerConfig not Required<LoggerConfig> | file/transports/console fields are optional, must reflect in return type |
-| 2026-01-18 | Default transports initialized on module load | Ensures ConsoleTransport is always available by default for backward compatibility |
-| 2026-01-18 | Transport errors caught and logged to stderr | Prevents transport failures from crashing the application |
+| 2026-01-18 | Synchronous `log()` method | Logging must not block; async handled internally |
+| 2026-01-18 | Both formatted string AND raw entry | Enables simple and advanced use cases |
+| 2026-01-18 | Stream-based FileTransport | Node.js built-in, no dependencies |
+| 2026-01-18 | File shorthand `{ file: './app.log' }` | Simple configuration for common case |
+| 2026-01-18 | Optional `close()` method | Transports without resources don't need stubs |
+| 2026-01-18 | Transport errors caught in try-catch | Prevent transport failures from crashing app |
+| 2026-01-18 | Forward reference for Transport type | Avoids circular dependency |
+| 2026-01-18 | Default ConsoleTransport on module load | Backward compatibility |
+| 2026-01-18 | `configure()` returns `LoggerConfig` | File/transports/console are optional |
+
+*(Full log in .planning/PROJECT.md)*
 
 ## Blockers & Concerns
 
@@ -38,47 +66,8 @@
 |-------|--------|--------|
 | - | - | - |
 
-## Session Continuity
-
-**Last session:** 2026-01-18T18:28:48Z
-**Stopped at:** Completed 01-04-PLAN.md - Phase 1 complete
-**Resume file:** None
-
-## Alignment Status
-
-**Phase 1 Scope:** Transport abstraction and file logging
-**Status:** COMPLETE
-
-**Completed Work:**
-- Project initialized
-- Requirements defined
-- Phase 1 planned (4 plans)
-- **Plan 01-01 executed** - Transport interface created
-- **Plan 01-02 executed** - FileTransport and ConsoleTransport implemented
-- **Plan 01-03 executed** - Transport system integrated with logger and config
-- **Plan 01-04 executed** - Tests and documentation completed
-- **Transport interface defined** with log() and optional close() methods
-- **LoggerConfig extended** with file, transports, console fields
-- **FileTransport implemented** using Node.js streams for efficient file writing
-- **ConsoleTransport implemented** with level-aware console method routing
-- **Barrel exports updated** for clean public API
-- **configure() extended** with file shorthand and transports array support
-- **writeLog() updated** to iterate over transports with error handling
-- **Public API exports** Transport type and transport classes
-- **Test suite created** with 97.24% coverage
-- **README updated** with transport documentation and migration guide
-- **Backward compatibility maintained** - all existing code works unchanged
-
-**Next Steps:**
-- Phase 1 complete ✅ - Ready for Phase 2 (Log Rotation) planning
-- Recommended: `/gsd:discuss-phase 02` — Gather context and clarify approach
-- Alternative: `/gsd:plan-phase 02` — Skip discussion, plan Phase 2 directly
-
 ## Dependencies
 
 **External:** None (zero-dependency philosophy)
-**Internal:** None (first phase)
-**Output from 01-01:** Transport interface, extended LoggerConfig, Transport exports
-**Output from 01-02:** FileTransport class, ConsoleTransport class, barrel exports
-**Output from 01-03:** Transport-aware configure(), transport-aware writeLog(), public API exports
-**Output from 01-04:** Test suite (97.24% coverage), transport documentation in README
+**Internal:** Transport system (v1.0) complete and stable
+**Output from v1.0:** Transport interface, FileTransport, ConsoleTransport, 97.24% test coverage

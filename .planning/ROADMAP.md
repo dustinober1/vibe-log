@@ -4,16 +4,27 @@
 
 ## Overview
 
-This roadmap tracks the development of log-vibe, a beautiful zero-dependency logging library for Node.js. The project is organized into phases, each delivering specific functionality.
+This roadmap tracks the development of log-vibe, a beautiful zero-dependency logging library for Node.js. The project is organized into milestones, each containing one or more phases delivering specific functionality.
 
 ## Current Status
 
-**Active Phase:** Phase 2 - Log Rotation (Planning Required)
-**Status:** Phase 1 Complete ✅
+**Active Milestone:** v1.1 - Planning Required
+**Status:** v1.0 Complete ✅
 
 ---
 
-## Phase 1: Transport System
+## Milestones
+
+- ✅ **v1.0 Transport System** — Phase 1 (shipped 2026-01-18)
+- 📋 **v1.1 Log Rotation** — Phase 2 (planned)
+- 📋 **v2.0 Advanced Transports** — Future
+
+---
+
+## Phases
+
+<details>
+<summary>✅ v1.0 Transport System (Phase 1) — SHIPPED 2026-01-18</summary>
 
 **Goal:** Add transport abstraction and file logging to enable logs to be written to files and custom destinations.
 
@@ -21,7 +32,7 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 
 **Completed:** 2026-01-18
 
-### Plans
+**Plans:**
 
 | Plan | Wave | Description | Status |
 |------|------|-------------|--------|
@@ -30,40 +41,26 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 | [01-03-PLAN.md](./phases/01-transport-system/01-03-PLAN.md) | 3 | Integrate transports into logger and config | ✅ Complete |
 | [01-04-PLAN.md](./phases/01-transport-system/01-04-PLAN.md) | 4 | Write tests and documentation | ✅ Complete |
 
-### Execution Waves
-
-**Wave 1 (Foundational):**
-- Plan 01-01: Transport interface, type definitions, public API
-
-**Wave 2 (Implementation):**
-- Plan 01-02: FileTransport and ConsoleTransport implementations
-
-**Wave 3 (Integration):**
-- Plan 01-03: Wire transports into logger and configuration
-
-**Wave 4 (Validation):**
-- Plan 01-04: Comprehensive tests and documentation
-
-### Key Deliverables
-
+**Key Deliverables:**
 - ✅ Transport interface with `log()` and optional `close()` methods
 - ✅ FileTransport using Node.js streams
 - ✅ ConsoleTransport for backward compatibility
 - ✅ `configure({ file: './app.log' })` shorthand
 - ✅ Multiple transports support
 - ✅ Custom transport API
-- ✅ 99%+ test coverage
+- ✅ 97.24% test coverage
 - ✅ Complete documentation
 
-### Out of Scope
-
-- ❌ Log rotation (deferred to Phase 2)
+**Out of Scope:**
+- ❌ Log rotation (deferred to v1.1)
 - ❌ Remote service transports (users can build via custom API)
-- ❌ Built-in compression (deferred to Phase 2)
+- ❌ Built-in compression (deferred to v1.1)
 
----
+</details>
 
-## Phase 2: Log Rotation (Future)
+### 📋 v1.1 Log Rotation (Planned)
+
+**Goal:** Add log rotation capabilities for production file logging.
 
 **Status:** 📋 Not Planned
 
@@ -73,9 +70,9 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 - Old log cleanup
 - Gzip compression
 
----
+### 📋 v2.0 Advanced Transports (Future)
 
-## Phase 3: Advanced Transports (Future)
+**Goal:** Built-in remote transports and advanced features.
 
 **Status:** 📋 Not Planned
 
@@ -86,11 +83,13 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 
 ---
 
-## Execution Summary
+## Progress
 
-**Total Phases:** 1 active, 2 future
-**Total Plans:** 4 (all ready)
-**Estimated Execution Time:** 2-3 hours (based on Claude execution)
+| Phase             | Milestone | Plans Complete | Status      | Completed  |
+| ----------------- | --------- | -------------- | ----------- | ---------- |
+| 1. Transport System | v1.0      | 4/4            | Complete    | 2026-01-18 |
+| 2. Log Rotation   | v1.1      | 0/4            | Not started | -          |
+| 3. Advanced Transports | v2.0   | 0/3            | Not started | -          |
 
 ---
 
@@ -98,7 +97,7 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 
 - [Project Overview](./PROJECT.md)
 - [Requirements](./REQUIREMENTS.md)
-- [Future Plans](./FUTURE.md)
+- [Milestones](./MILESTONES.md)
 - [Codebase Analysis](./codebase/)
 
 ---
