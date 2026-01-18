@@ -18,17 +18,42 @@ export interface Transport {
  * @remarks
  * Rotation is an internal concern of FileTransport.
  * When rotation config is provided, FileTransport automatically
- * rotates log files when they exceed the size threshold.
+ * rotates log files based on the configured strategy.
+ *
+ * Rotation strategies:
+ * - Size-based: Rotates when file exceeds maxSize threshold
+ * - Time-based: Rotates daily at midnight UTC when pattern is set
+ * - Hybrid: Combines both strategies (rotates on whichever triggers first)
  *
  * Size can be specified as:
  * - Number: Bytes (e.g., 104857600 for 100MB)
  * - String: Human-readable format (e.g., '100MB', '1.5GB', '500KB')
  *
  * Default maxSize: 100MB (104857600 bytes)
+ *
+ * Time-based rotation uses UTC midnight to avoid timezone issues
+ * and Daylight Saving Time problems.
  */
 export interface RotationConfig {
     /** Maximum file size before rotation (default: '100MB') */
     maxSize?: string | number;
+    /**
+     * Time-based rotation pattern
+     *
+     * @remarks
+     * When set to 'daily', rotates log files at midnight UTC.
+     * This ensures consistent rotation regardless of server timezone.
+     *
+     * Can be combined with maxSize for hybrid rotation:
+     * rotates at midnight OR when size threshold is exceeded.
+     *
+     * Example:
+     * ```typescript
+     * { pattern: 'daily' }                    // Daily rotation at midnight UTC
+     * { pattern: 'daily', maxSize: '100MB' }  // Daily OR at 100MB, whichever first
+     * ```
+     */
+    pattern?: 'daily';
 }
 
 /**
