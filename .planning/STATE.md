@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 4 - Async Compression
-**Plan:** 04 of 5
-**Status:** Phase in progress
-**Last activity:** 2026-01-18 — Completed comprehensive test suite for async compression with TDD methodology
+**Plan:** 05 of 5
+**Status:** Phase complete
+**Last activity:** 2026-01-18 — Completed compression documentation in README.md
 
-**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete, Phase 4 - 4/5 plans complete)
+**Progress:** █████████░░░░░░░░ 55% (3.5/6 phases complete: Phases 1-3 complete, Phase 4 complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T20:33:45Z
-**Stopped at:** Completed 04-04-PLAN.md (compression test suite)
+**Last session:** 2026-01-18T20:32:21Z
+**Stopped at:** Completed 04-05-PLAN.md (compression documentation)
 **Resume file:** None
 
 ## Alignment Status
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** IN PROGRESS 🔨 (3.0/6 phases complete - Phase 3 done, Phase 4 planned)
+**Status:** IN PROGRESS 🔨 (3.5/6 phases complete - Phase 4 done, Phase 5 planned)
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -44,7 +44,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Phase 4: Async gzip compression (5 plans in 4 waves - 4/5 complete)
+- Phase 4: Async gzip compression (5 plans - COMPLETE ✅)
 - Phase 5: Retention cleanup (5 plans)
 - Phase 6: Error handling and documentation (6 plans)
 
@@ -111,6 +111,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | TDD methodology for compression tests | RED-GREEN-REFACTOR cycle ensures correctness and comprehensive coverage |
 | 2026-01-18 | Test isolation with dedicated directories | Use unique test directories to avoid interference between test suites |
 | 2026-01-18 | Comprehensive error testing | Test error scenarios naturally (e.g., directory instead of file) instead of complex mocking |
+| 2026-01-18 | Documentation structure for compression features | Conceptual → Configuration examples → Error handling → Migration guide for clear adoption path |
+| 2026-01-18 | Compression level trade-offs documented | Table shows speed/size trade-offs (1-9) to guide user choice |
+| 2026-01-18 | Migration guide focuses on incremental adoption | Add compression to existing rotation rather than complete rewrite |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -216,18 +219,17 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 04-05: Document compression features
 
 **Upcoming:**
-- [ ] Execute Phase 4: Async gzip compression
 - [ ] Phase 5: Retention cleanup
 - [ ] Phase 6: Error handling and documentation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 3.0/6 phases complete (50%)
+**v1.1 Log Rotation Milestone:** 3.5/6 phases complete (58%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
 | 3 | Time-based Rotation | 5/5 | Complete |
-| 4 | Async Compression | 4/5 | In Progress |
+| 4 | Async Compression | 5/5 | Complete |
 | 5 | Retention Cleanup | 0/5 | Planned |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
