@@ -8,15 +8,15 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 
 ## Current Status
 
-**Active Milestone:** v1.1 - Planning Required
-**Status:** v1.0 Complete ✅
+**Active Milestone:** v1.1 - Log Rotation
+**Status:** Phase 2 planned, ready for execution
 
 ---
 
 ## Milestones
 
 - ✅ **v1.0 Transport System** — Phase 1 (shipped 2026-01-18)
-- 📋 **v1.1 Log Rotation** — Phase 2 (planned)
+- 🔨 **v1.1 Log Rotation** — Phases 2-6 (in progress)
 - 📋 **v2.0 Advanced Transports** — Future
 
 ---
@@ -58,19 +58,137 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 
 </details>
 
-### 📋 v1.1 Log Rotation (Planned)
+### 🔨 Phase 2: Core Rotation Infrastructure
 
-**Goal:** Add log rotation capabilities for production file logging.
+**Goal:** Implement size-based rotation with atomic file switching to prevent log data loss.
 
-**Status:** 📋 Not Planned
+**Status:** 📋 Planned
 
-**Potential Features:**
-- Daily log file rotation
-- Size-based rotation
-- Old log cleanup
-- Gzip compression
+**Dependencies:** Phase 1 (Transport System) complete
 
-### 📋 v2.0 Advanced Transports (Future)
+**Requirements Mapped:**
+- CONFIG-01: Rotation configured via `configure({ file, rotation })`
+- CONFIG-02: Backward compatible — no rotation config means no rotation
+- RELIABLE-01: Rotation is atomic — no log entries lost during rotation
+- RELIABLE-02: Stream properly closed and cleaned up during rotation
+- ROTATE-02: Size-based rotation when file exceeds threshold (default 100MB)
+- TEST-01: Unit tests for rotation logic
+
+**Success Criteria:**
+1. User can configure size-based rotation via `configure({ file: './app.log', rotation: { maxSize: '100MB' } })`
+2. When log file exceeds configured size threshold, rotation occurs automatically with no data loss
+3. During rotation, writes are temporarily gated and no log entries are lost
+4. After rotation, original file is renamed to date-stamped name and new active file is created
+5. Existing code without rotation config continues working unchanged (backward compatibility)
+
+**Out of Scope:** Time-based rotation (Phase 3), compression (Phase 4), retention (Phase 5)
+
+---
+
+### 🔨 Phase 3: Time-based Rotation
+
+**Goal:** Add daily log rotation at midnight with date-stamped filenames for organized log management.
+
+**Status:** 📋 Planned
+
+**Dependencies:** Phase 2 (Core Rotation Infrastructure)
+
+**Requirements Mapped:**
+- ROTATE-01: Daily rotation at midnight creates date-stamped file
+- FILE-01: Rotated files use date-stamped names (app-2026-01-18.log.gz)
+- FILE-02: Active file maintains base name (app.log)
+
+**Success Criteria:**
+1. User can configure daily rotation via `configure({ file: './app.log', rotation: { pattern: 'daily' } })`
+2. At midnight, log file is automatically rotated to `app-YYYY-MM-DD.log` format
+3. Active file always maintains base name (e.g., `app.log`)
+4. Timer for midnight scheduling is automatically cleaned up when logger is closed
+5. User can combine size-based and daily rotation (hybrid strategy)
+
+**Out of Scope:** Compression (Phase 4), retention cleanup (Phase 5)
+
+---
+
+### 🔨 Phase 4: Async Compression
+
+**Goal:** Compress rotated log files with gzip to reduce storage overhead without blocking the event loop.
+
+**Status:** 📋 Planned
+
+**Dependencies:** Phase 3 (Time-based Rotation) - requires rotated files to compress
+
+**Requirements Mapped:**
+- COMPRESS-01: Rotated files are compressed with gzip
+- COMPRESS-02: Compression is non-blocking and async
+- ERROR-02: Compression failures don't block logging
+- TEST-02: Unit tests for compression
+
+**Success Criteria:**
+1. User can enable compression via `configure({ file: './app.log', rotation: { compress: true } })`
+2. After rotation completes, original file is compressed to `.gz` format and deleted
+3. Compression executes asynchronously without blocking log writes
+4. Compression errors are logged but don't crash the logging system or block new writes
+5. Compressed files follow naming pattern `app-YYYY-MM-DD.log.gz`
+
+**Out of Scope:** Retention cleanup (Phase 5)
+
+---
+
+### 🔨 Phase 5: Retention Cleanup
+
+**Goal:** Automatically delete expired log files based on configurable retention policy to manage disk space.
+
+**Status:** 📋 Planned
+
+**Dependencies:** Phase 4 (Async Compression) - cleans up compressed files
+
+**Requirements Mapped:**
+- RETAIN-01: Retention period is configurable (default 14 days)
+- RETAIN-02: Expired log files are automatically deleted
+- ERROR-03: Cleanup errors are logged but don't stop rotation
+- TEST-03: Unit tests for retention cleanup
+
+**Success Criteria:**
+1. User can configure retention via `configure({ file: './app.log', rotation: { retention: 14 } })` (days)
+2. After each rotation, files older than retention period are automatically deleted
+3. Cleanup executes asynchronously without blocking log writes
+4. Cleanup errors (permission issues, file not found) are logged but don't stop rotation
+5. Newest log files are always preserved, only files exceeding retention age are deleted
+
+**Out of Scope:** Comprehensive error handling (Phase 6)
+
+---
+
+### 🔨 Phase 6: Error Handling & Production Hardening
+
+**Goal:** Comprehensive error handling, edge case coverage, and production-ready reliability for the rotation system.
+
+**Status:** 📋 Planned
+
+**Dependencies:** Phase 5 (Retention Cleanup) - all features must work before hardening
+
+**Requirements Mapped:**
+- ERROR-01: Rotation errors don't crash the logging system
+- TEST-04: Integration tests for full rotation workflow
+- TEST-05: Error handling tests
+- TEST-06: Maintain 97%+ test coverage
+- DOCS-01: README section on log rotation
+- DOCS-02: Configuration examples for rotation options
+- DOCS-03: Migration guide from basic file logging
+
+**Success Criteria:**
+1. Rotation errors (disk full, permission denied, file locked) are caught and logged without crashing application
+2. Integration tests verify end-to-end rotation workflow (configure → write → rotate → compress → cleanup)
+3. Error paths are tested (ENOSPC, EACCES, EROFS, stream errors, compression failures)
+4. Test coverage meets or exceeds 97% across all rotation code
+5. README documents rotation configuration with examples for common use cases
+6. Migration guide shows how to upgrade from basic file logging to rotation-enabled logging
+
+**Out of Scope:** None (this phase completes v1.1)
+
+---
+
+### 📋 Phase 7+: v2.0 Advanced Transports (Future)
 
 **Goal:** Built-in remote transports and advanced features.
 
@@ -80,6 +198,7 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 - Built-in remote transports (Datadog, ELK, etc.)
 - Transport buffering/batching
 - Transport filtering by log level
+- Advanced rotation patterns (hourly, weekly, custom schedules)
 
 ---
 
@@ -88,8 +207,11 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 | Phase             | Milestone | Plans Complete | Status      | Completed  |
 | ----------------- | --------- | -------------- | ----------- | ---------- |
 | 1. Transport System | v1.0      | 4/4            | Complete    | 2026-01-18 |
-| 2. Log Rotation   | v1.1      | 0/4            | Not started | -          |
-| 3. Advanced Transports | v2.0   | 0/3            | Not started | -          |
+| 2. Core Rotation Infrastructure | v1.1 | 0/6 | Not started | - |
+| 3. Time-based Rotation | v1.1 | 0/5 | Not started | - |
+| 4. Async Compression | v1.1 | 0/5 | Not started | - |
+| 5. Retention Cleanup | v1.1 | 0/5 | Not started | - |
+| 6. Error Handling & Production Hardening | v1.1 | 0/6 | Not started | - |
 
 ---
 
@@ -99,6 +221,7 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 - [Requirements](./REQUIREMENTS.md)
 - [Milestones](./MILESTONES.md)
 - [Codebase Analysis](./codebase/)
+- [Research Summary](./research/SUMMARY.md)
 
 ---
 
