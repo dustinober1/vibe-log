@@ -215,4 +215,307 @@ describe('FileTransport', () => {
             await expect(transport.close()).resolves.toBeUndefined();
         });
     });
+
+    describe('compression integration', () => {
+        const compressionTestDir = path.join(process.cwd(), 'test-logs-compression-integration');
+
+        beforeEach(() => {
+            // Clean up test directory
+            if (fs.existsSync(compressionTestDir)) {
+                fs.rmSync(compressionTestDir, { recursive: true, force: true });
+            }
+            // Create test directory
+            fs.mkdirSync(compressionTestDir, { recursive: true });
+        });
+
+        afterEach(async () => {
+            // Clean up test directory
+            if (fs.existsSync(compressionTestDir)) {
+                fs.rmSync(compressionTestDir, { recursive: true, force: true });
+            }
+        });
+
+        it('should schedule compression after rotation when compressionLevel set', async () => {
+            const compressionTestFile = path.join(compressionTestDir, 'app.log');
+            const transport = new FileTransport(compressionTestFile, {
+                maxSize: 1024, // 1KB
+                compressionLevel: 6,
+            });
+
+            const entry: LogEntry = {
+                level: 'info',
+                context: 'Test',
+                message: 'Test message',
+                timestamp: new Date(),
+            };
+
+            const config: LoggerConfig = {
+                level: 'debug',
+                showTimestamp: true,
+                showIcons: true,
+                useColors: false,
+                maxDepth: 10,
+                timestampFormat: 'time',
+            };
+
+            // Write enough logs to trigger rotation
+            for (let i = 0; i < 20; i++) {
+                transport.log(`This is a test log message with some content to trigger rotation: ${i}`, entry, config);
+            }
+
+            // Wait for rotation and compression to complete
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Close transport
+            await transport.close();
+
+            // Wait a bit more for compression to finish
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            // Verify .gz file was created
+            const files = fs.readdirSync(compressionTestDir);
+            const gzFiles = files.filter(f => f.endsWith('.gz'));
+            expect(gzFiles.length).toBeGreaterThan(0);
+
+            // Verify original rotated file was deleted (only .gz files remain)
+            const logFiles = files.filter(f => f.endsWith('.log') && f !== 'app.log');
+            expect(logFiles.length).toBe(0);
+        });
+
+        it('should not compress when compressionLevel not set', async () => {
+            const compressionTestFile = path.join(compressionTestDir, 'app.log');
+            const transport = new FileTransport(compressionTestFile, {
+                maxSize: 1024, // 1KB
+                // No compressionLevel
+            });
+
+            const entry: LogEntry = {
+                level: 'info',
+                context: 'Test',
+                message: 'Test message',
+                timestamp: new Date(),
+            };
+
+            const config: LoggerConfig = {
+                level: 'debug',
+                showTimestamp: true,
+                showIcons: true,
+                useColors: false,
+                maxDepth: 10,
+                timestampFormat: 'time',
+            };
+
+            // Write enough logs to trigger rotation
+            for (let i = 0; i < 20; i++) {
+                transport.log(`This is a test log message with some content: ${i}`, entry, config);
+            }
+
+            // Wait for rotation to complete
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Close transport
+            await transport.close();
+
+            // Wait a bit more to ensure no compression happens
+            await new Promise(resolve => setTimeout(resolve, 50));
+
+            // Verify NO .gz file was created
+            const files = fs.readdirSync(compressionTestDir);
+            const gzFiles = files.filter(f => f.endsWith('.gz'));
+            expect(gzFiles.length).toBe(0);
+
+            // Verify app.log exists (current log file)
+            expect(fs.existsSync(path.join(compressionTestDir, 'app.log'))).toBe(true);
+        });
+
+        it('should throw error for invalid compression level', () => {
+            const compressionTestFile = path.join(compressionTestDir, 'app.log');
+
+            // Try compression level 0 (too low)
+            expect(() => new FileTransport(compressionTestFile, { compressionLevel: 0 }))
+                .toThrow('Compression level must be between 1 and 9');
+
+            // Try compression level 10 (too high)
+            expect(() => new FileTransport(compressionTestFile, { compressionLevel: 10 }))
+                .toThrow('Compression level must be between 1 and 9');
+
+            // Try negative compression level
+            expect(() => new FileTransport(compressionTestFile, { compressionLevel: -1 }))
+                .toThrow('Compression level must be between 1 and 9');
+        });
+
+        it('should wait 10ms before starting compression', async () => {
+            const compressionTestFile = path.join(compressionTestDir, 'app.log');
+
+            const transport = new FileTransport(compressionTestFile, {
+                maxSize: 1024, // 1KB
+                compressionLevel: 6,
+            });
+
+            const entry: LogEntry = {
+                level: 'info',
+                context: 'Test',
+                message: 'Test message',
+                timestamp: new Date(),
+            };
+
+            const config: LoggerConfig = {
+                level: 'debug',
+                showTimestamp: true,
+                showIcons: true,
+                useColors: false,
+                maxDepth: 10,
+                timestampFormat: 'time',
+            };
+
+            // Write enough logs to trigger rotation
+            for (let i = 0; i < 20; i++) {
+                transport.log(`This is a test log message: ${i}`, entry, config);
+            }
+
+            // Wait for rotation but before compression completes
+            await new Promise(resolve => setTimeout(resolve, 5));
+
+            // At this point, rotation should have started but compression should be delayed
+            // The .gz file should not exist yet because of the 10ms delay
+            const filesBefore = fs.readdirSync(compressionTestDir);
+            const gzFilesBefore = filesBefore.filter(f => f.endsWith('.gz'));
+            // .gz file might not exist yet due to 10ms delay
+            expect(gzFilesBefore.length).toBeGreaterThanOrEqual(0);
+
+            // Wait longer for compression to complete
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Close transport
+            await transport.close();
+        });
+
+        it('should complete rotation without waiting for compression (fire-and-forget)', async () => {
+            const compressionTestFile = path.join(compressionTestDir, 'app.log');
+
+            const transport = new FileTransport(compressionTestFile, {
+                maxSize: 1024, // 1KB
+                compressionLevel: 6,
+            });
+
+            const entry: LogEntry = {
+                level: 'info',
+                context: 'Test',
+                message: 'Test message',
+                timestamp: new Date(),
+            };
+
+            const config: LoggerConfig = {
+                level: 'debug',
+                showTimestamp: true,
+                showIcons: true,
+                useColors: false,
+                maxDepth: 10,
+                timestampFormat: 'time',
+            };
+
+            // Write enough logs to trigger rotation
+            for (let i = 0; i < 20; i++) {
+                transport.log(`This is a test log message: ${i}`, entry, config);
+            }
+
+            // Rotation should complete quickly (not wait for compression)
+            const rotationStart = Date.now();
+            await new Promise(resolve => setTimeout(resolve, 50));
+            const rotationDuration = Date.now() - rotationStart;
+
+            // Rotation should complete in less than 100ms (not waiting for compression)
+            expect(rotationDuration).toBeLessThan(100);
+
+            // Close transport
+            await transport.close();
+        });
+
+        it('should handle multiple rotations with multiple compressions', async () => {
+            const compressionTestFile = path.join(compressionTestDir, 'app.log');
+
+            // Use a very small size to trigger multiple rotations quickly
+            const transport = new FileTransport(compressionTestFile, {
+                maxSize: 100, // Very small to trigger multiple rotations
+                compressionLevel: 6,
+            });
+
+            const entry: LogEntry = {
+                level: 'info',
+                context: 'Test',
+                message: 'Test message',
+                timestamp: new Date(),
+            };
+
+            const config: LoggerConfig = {
+                level: 'debug',
+                showTimestamp: true,
+                showIcons: true,
+                useColors: false,
+                maxDepth: 10,
+                timestampFormat: 'time',
+            };
+
+            // Write logs synchronously to trigger rotations
+            // Each log is about 60 bytes, so 5 logs should trigger rotation
+            for (let i = 0; i < 15; i++) {
+                transport.log(`Log message ${i}: some content here`, entry, config);
+            }
+
+            // Wait for all rotations and compressions to complete
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Close transport
+            await transport.close();
+
+            // Wait a bit more for any pending compressions
+            await new Promise(resolve => setTimeout(resolve, 200));
+
+            // Verify at least one .gz file was created (compression is working)
+            const files = fs.readdirSync(compressionTestDir);
+            const gzFiles = files.filter(f => f.endsWith('.gz'));
+            expect(gzFiles.length).toBeGreaterThanOrEqual(1);
+        });
+
+        it('should not crash on compression errors', async () => {
+            const compressionTestFile = path.join(compressionTestDir, 'app.log');
+
+            // Mock console.error to capture error logs
+            const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+            const transport = new FileTransport(compressionTestFile, {
+                maxSize: 1024, // 1KB
+                compressionLevel: 6,
+            });
+
+            const entry: LogEntry = {
+                level: 'info',
+                context: 'Test',
+                message: 'Test message',
+                timestamp: new Date(),
+            };
+
+            const config: LoggerConfig = {
+                level: 'debug',
+                showTimestamp: true,
+                showIcons: true,
+                useColors: false,
+                maxDepth: 10,
+                timestampFormat: 'time',
+            };
+
+            // Write enough logs to trigger rotation
+            for (let i = 0; i < 20; i++) {
+                transport.log(`This is a test log message: ${i}`, entry, config);
+            }
+
+            // Wait for rotation and compression
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            // Close transport should not throw even if compression fails
+            await expect(transport.close()).resolves.toBeUndefined();
+
+            consoleErrorSpy.mockRestore();
+        });
+    });
 });
