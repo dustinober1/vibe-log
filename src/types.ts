@@ -25,11 +25,15 @@ export interface Transport {
  * - Time-based: Rotates daily at midnight UTC when pattern is set
  * - Hybrid: Combines both strategies (rotates on whichever triggers first)
  *
+ * Compression runs asynchronously after rotation completes using fire-and-forget
+ * pattern to avoid blocking the log() method or event loop.
+ *
  * Size can be specified as:
  * - Number: Bytes (e.g., 104857600 for 100MB)
  * - String: Human-readable format (e.g., '100MB', '1.5GB', '500KB')
  *
  * Default maxSize: 100MB (104857600 bytes)
+ * Default compressionLevel: 6 (balanced speed/size)
  *
  * Time-based rotation uses UTC midnight to avoid timezone issues
  * and Daylight Saving Time problems.
@@ -54,6 +58,28 @@ export interface RotationConfig {
      * ```
      */
     pattern?: 'daily';
+    /**
+     * Gzip compression level for rotated log files
+     *
+     * @remarks
+     * When set, rotated log files are compressed asynchronously using gzip.
+     * Compression runs fire-and-forget after rotation completes without blocking logging.
+     *
+     * Compression levels (zlib standard):
+     * - 1: Fastest compression (larger files)
+     * - 6: Balanced speed/size (default)
+     * - 9: Best compression (slowest)
+     *
+     * Default: 6 (balanced compression)
+     *
+     * Example:
+     * ```typescript
+     * { maxSize: '100MB', compressionLevel: 1 }     // Fast compression
+     * { maxSize: '100MB', compressionLevel: 9 }     // Best compression
+     * { maxSize: '100MB', compressionLevel: 6 }     // Balanced (default)
+     * ```
+     */
+    compressionLevel?: number;
 }
 
 /**
