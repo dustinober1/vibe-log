@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T18:55:27Z
+**Last Updated:** 2026-01-18T19:28:21Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 3 - Time-based Rotation
-**Plan:** Not started
-**Status:** Ready to plan
-**Last activity:** 2026-01-18 — Phase 2 execution complete
+**Plan:** 01 of 5
+**Status:** In progress
+**Last activity:** 2026-01-18 — Completed 03-01-PLAN.md (Time-based rotation configuration)
 
-**Progress:** ██████████░░░░░░░░ 33% (2/6 phases complete: Phases 1-2 of 6)
+**Progress:** ██████████░░░░░░░░ 35% (2.2/6 phases complete: Phases 1-2 complete, Phase 3 plan 1 of 5)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T18:55:27Z
-**Stopped at:** Completed 02-06-PLAN.md (Public API integration, integration tests, documentation)
+**Last session:** 2026-01-18T19:28:21Z
+**Stopped at:** Completed 03-01-PLAN.md (Time-based rotation configuration)
 **Resume file:** None
 
 ## Alignment Status
@@ -84,6 +84,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Synchronous size updates | Update size before write to enable accurate rotation checks |
 | 2026-01-18 | Rotation trigger in callback | Trigger rotation after write completes to avoid blocking |
 | 2026-01-18 | Rotation config only for file shorthand | Custom FileTransport instances receive options via constructor |
+| 2026-01-18 | UTC midnight for daily rotation | Use Date.UTC() and getUTC*() methods to avoid DST and timezone issues |
+| 2026-01-18 | Optional pattern field in RotationConfig | Maintain backward compatibility - pattern is opt-in |
+| 2026-01-18 | Hybrid rotation support | pattern and maxSize can be combined for time OR size-based triggers |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -119,6 +122,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Write gating: skip log() calls when rotating flag is true
 - Size checking with fs.promises.stat() for accurate file size
 - Rotation deduplication via rotationInProgress promise tracking
+- UTC-based time calculations: Use Date.UTC() and getUTC*() methods for timezone-independent scheduling
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -143,21 +147,26 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Add integration tests for rotation workflow
 - [x] Integrate rotation config into public API
 - [x] Add rotation documentation to README
+- [x] Plan 03-01: Extend RotationConfig with pattern field
+- [x] Plan 03-01: Create getMsUntilNextMidnightUTC utility function
 
 **Upcoming:**
-- [ ] Phase 3: Time-based rotation with midnight scheduling
+- [ ] Plan 03-02: Integrate time-based rotation into FileTransport
+- [ ] Plan 03-03: Add timer-based rotation triggers
+- [ ] Plan 03-04: Implement hybrid rotation logic (size + time)
+- [ ] Plan 03-05: Add tests and documentation for time-based rotation
 - [ ] Phase 4: Async gzip compression
 - [ ] Phase 5: Retention cleanup
 - [ ] Phase 6: Error handling and documentation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 2/5 phases complete (40%)
+**v1.1 Log Rotation Milestone:** 2.2/5 phases complete (44%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
-| 3 | Time-based Rotation | 0/5 | Planned |
+| 3 | Time-based Rotation | 1/5 | In progress |
 | 4 | Async Compression | 0/5 | Planned |
 | 5 | Retention Cleanup | 0/5 | Planned |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
