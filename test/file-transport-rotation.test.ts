@@ -4,7 +4,11 @@ import path from 'node:path';
 import { FileTransport } from '../src/transports/file-transport';
 
 const mockWriteStream = {
-    write: vi.fn(),
+    write: vi.fn((data, encoding, cb) => {
+        // Call the callback to simulate async write completion
+        if (cb) setImmediate(() => cb());
+        return true;
+    }),
     end: vi.fn((cb) => cb && cb(null)),
     on: vi.fn(),
     removeAllListeners: vi.fn(),
@@ -139,15 +143,12 @@ describe('Rotation workflow', () => {
     });
 
     it('should trigger rotation when file size exceeds maxSize', async () => {
-        // Mock file size
-        (fs.promises.stat as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-            size: 100 * 1024 * 1024, // 100MB
-        } as fs.Stats);
-
         const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
 
-        // Write enough data to trigger rotation
-        const logEntry = 'x'.repeat(1024); // 1KB
+        // Write enough data to trigger rotation (simulating existing file content)
+        // The transport tracks size internally, starting from 0
+        // We need to write enough to exceed 100MB
+        const logEntry = 'x'.repeat(100 * 1024 * 1024); // 100MB
         transport.log(logEntry, {} as any, {} as any);
 
         // Wait for async rotation to complete
@@ -158,11 +159,6 @@ describe('Rotation workflow', () => {
     });
 
     it('should not trigger rotation when file size below maxSize', async () => {
-        // Mock file size
-        (fs.promises.stat as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-            size: 50 * 1024 * 1024, // 50MB
-        } as fs.Stats);
-
         const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
 
         // Write small amount of data
@@ -176,13 +172,6 @@ describe('Rotation workflow', () => {
     });
 
     it('should gate writes during rotation', async () => {
-        let rotationInProgress = true;
-
-        // Mock stat to return large size
-        (fs.promises.stat as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-            size: 100 * 1024 * 1024,
-        } as fs.Stats);
-
         // Mock rename to delay
         (fs.rename as unknown as ReturnType<typeof vi.fn>).mockImplementation(
             (oldPath: string, newPath: string, cb: (err?: Error | null) => void) => {
@@ -192,8 +181,9 @@ describe('Rotation workflow', () => {
 
         const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
 
-        // Trigger rotation
-        transport.log('trigger rotation', {} as any, {} as any);
+        // Write enough to trigger rotation
+        const logEntry = 'x'.repeat(100 * 1024 * 1024); // 100MB
+        transport.log(logEntry, {} as any, {} as any);
 
         // Wait a bit for rotation to start
         await new Promise(resolve => setTimeout(resolve, 10));
@@ -209,10 +199,6 @@ describe('Rotation workflow', () => {
     });
 
     it('should close stream, rename file, and create new stream', async () => {
-        (fs.promises.stat as unknown as ReturnType<typeof vi.fn>).mockResolvedValue({
-            size: 100 * 1024 * 1024,
-        } as fs.Stats);
-
         (fs.rename as unknown as ReturnType<typeof vi.fn>).mockImplementation(
             (oldPath: string, newPath: string, cb: (err?: Error | null) => void) => {
                 cb(null);
@@ -222,7 +208,8 @@ describe('Rotation workflow', () => {
         const transport = new FileTransport('./logs/app.log', { maxSize: '100MB' });
 
         // Trigger rotation
-        transport.log('trigger', {} as any, {} as any);
+        const logEntry = 'x'.repeat(100 * 1024 * 1024); // 100MB
+        transport.log(logEntry, {} as any, {} as any);
 
         // Wait for rotation to complete
         await new Promise(resolve => setTimeout(resolve, 100));
