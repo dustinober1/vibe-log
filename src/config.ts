@@ -67,7 +67,13 @@ export function configure(config: Partial<LoggerConfig>): LoggerConfig {
         const { file, rotation } = config;
 
         // Build FileTransport options if rotation config provided
-        const fileTransportOptions: { maxSize?: string | number; pattern?: 'daily' } = {};
+        const fileTransportOptions: {
+            maxSize?: string | number;
+            pattern?: 'daily';
+            compressionLevel?: number;
+            maxFiles?: number;
+            maxAge?: number;
+        } = {};
 
         if (rotation?.maxSize) {
             fileTransportOptions.maxSize = rotation.maxSize;
