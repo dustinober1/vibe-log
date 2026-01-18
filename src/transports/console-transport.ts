@@ -26,7 +26,7 @@ export class ConsoleTransport implements Transport {
      * from the formatter, so this transport only needs to route to the
      * appropriate console method.
      */
-    log(formatted: string, entry: LogEntry, config: LoggerConfig): void {
+    log(formatted: string, entry: LogEntry, _config: LoggerConfig): void {
         // Map levels to console methods (same pattern as existing logger.ts)
         switch (entry.level) {
             case 'error':

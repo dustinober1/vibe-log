@@ -11,7 +11,7 @@ import type { LogEntry, LoggerConfig } from '../types';
  */
 export class FileTransport implements Transport {
     private stream: fs.WriteStream;
-    private filePath: string;
+    private readonly filePath: string;
 
     /**
      * Create a new file transport
@@ -51,7 +51,7 @@ export class FileTransport implements Transport {
         // Prevent crashes on stream errors (Critical: unhandled error events crash Node.js)
         this.stream.on('error', (err) => {
             // Fallback to console.error - don't throw, don't crash
-            console.error(`[FileTransport] Write error for ${filePath}: ${err.message}`);
+            console.error(`[FileTransport] Write error for ${this.filePath}: ${err.message}`);
         });
     }
 
@@ -66,7 +66,7 @@ export class FileTransport implements Transport {
      * This method is synchronous. The stream handles backpressure internally.
      * For high-volume logging, consider backpressure handling in Phase 2.
      */
-    log(formatted: string, entry: LogEntry, config: LoggerConfig): void {
+    log(formatted: string, _entry: LogEntry, _config: LoggerConfig): void {
         try {
             this.stream.write(formatted + '\n');
         } catch (error) {
@@ -89,7 +89,7 @@ export class FileTransport implements Transport {
             // Remove error handler to avoid "Possible EventEmitter memory leak" warning
             this.stream.removeAllListeners('error');
 
-            this.stream.end((err) => {
+            this.stream.end((err: Error | null | undefined) => {
                 if (err) {
                     reject(err);
                 } else {
