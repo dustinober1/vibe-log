@@ -333,3 +333,70 @@ configure({
 - Check console for rotation errors
 - Listen for 'error' events on transport
 - Ensure disk isn't full (rotation requires disk space)
+
+## Compression Failures
+
+### Symptoms
+
+- Rotated files not compressed
+- `.gz` files don't exist
+- Files in `failed/` subdirectory
+
+### Diagnostic Steps
+
+1. Check for failed files:
+   ```bash
+   ls -lh /path/to/logs/failed/
+   ```
+
+2. Check compression config:
+   ```typescript
+   console.log(require('log-vibe').getConfig());
+   ```
+
+### Solutions
+
+**Enable compression:**
+```typescript
+configure({
+  file: './logs/app.log',
+  rotation: {
+    maxSize: '100MB',
+    compressionLevel: 6  // 1-9, default 6
+  }
+});
+```
+
+**Valid compression levels:**
+- 1: Fastest, larger files
+- 6: Balanced (recommended)
+- 9: Slowest, smallest files
+
+**Handle failed compression:**
+- Check disk space (compression needs temporary space)
+- Review files in `failed/` directory
+- Manually compress failed files:
+  ```bash
+  gzip /path/to/logs/failed/app-2025-01-18.log.1
+  mv /path/to/logs/failed/app-2025-01-18.log.1.gz /path/to/logs/
+  ```
+
+## Getting Help
+
+If you're still experiencing issues:
+
+1. Check console.error output for detailed error messages
+2. Listen for 'error' events on transports
+3. Enable debug logging to see internal operations
+4. Review this troubleshooting guide
+5. Check GitHub issues: https://github.com/dustinober1/vibe-log/issues
+6. Create a new issue with:
+   - log-vibe version
+   - Node.js version
+   - Operating system
+   - Error messages
+   - Minimal reproduction code
+
+---
+
+*See also: [Monitoring Guide](./MONITORING.md)*
