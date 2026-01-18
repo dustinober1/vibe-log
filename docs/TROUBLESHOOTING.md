@@ -90,3 +90,61 @@ This guide helps you diagnose and resolve common production issues with log-vibe
    # Add to crontab for hourly checks
    0 * * * * df -h /path/to/logs | awk '{print $5}' | grep -E '9[0-9]%' && mail -s "Disk full alert" admin@example.com
    ```
+
+## Permission Errors (EACCES)
+
+### Symptoms
+
+- Logs fail to write immediately on startup
+- Application may crash or fail to start
+- Console message: `[FileTransport] Write error: EACCES - Permission denied`
+- `permission-denied` event emitted if you're listening
+
+### Causes
+
+- Log directory owned by different user
+- Insufficient permissions on log directory or file
+- Running as different user than created log files
+
+### Diagnostic Steps
+
+1. Check directory ownership:
+   ```bash
+   ls -ld /path/to/logs
+   ```
+
+2. Check file ownership:
+   ```bash
+   ls -l /path/to/logs
+   ```
+
+3. Check current user:
+   ```bash
+   whoami
+   ```
+
+### Solutions
+
+**Fix ownership:**
+```bash
+# Change ownership to current user
+sudo chown -R $USER:$USER /path/to/logs
+```
+
+**Fix permissions:**
+```bash
+# Grant read/write/execute to owner
+chmod 700 /path/to/logs
+
+# Grant read/write to owner and group
+chmod 770 /path/to/logs
+
+# Grant read/write to all users (less secure)
+chmod 777 /path/to/logs
+```
+
+**Run with correct user:**
+```bash
+# Start application with log directory owner
+sudo -u loguser node app.js
+```
