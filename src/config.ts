@@ -83,6 +83,20 @@ export function configure(config: Partial<LoggerConfig>): LoggerConfig {
             fileTransportOptions.pattern = rotation.pattern;
         }
 
+        // Pass compression level to FileTransport
+        if (rotation?.compressionLevel !== undefined) {
+            fileTransportOptions.compressionLevel = rotation.compressionLevel;
+        }
+
+        // Pass retention configuration to FileTransport
+        if (rotation?.maxFiles !== undefined) {
+            fileTransportOptions.maxFiles = rotation.maxFiles;
+        }
+
+        if (rotation?.maxAge !== undefined) {
+            fileTransportOptions.maxAge = rotation.maxAge;
+        }
+
         // Only pass options if rotation config was provided
         const fileTransport = new FileTransport(
             file,
