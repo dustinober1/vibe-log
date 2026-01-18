@@ -4,6 +4,7 @@ import type { Transport } from './transport';
 import type { LogEntry, LoggerConfig } from '../types';
 import { getMsUntilNextMidnightUTC, generateRotatedName } from '../utils/rotation';
 import { compressRotatedFile } from '../utils/compression';
+import { cleanupOldLogs } from '../utils/retention';
 
 // Constants for file stream configuration
 const DEFAULT_FILE_MODE = 0o666; // read/write for all (modified by umask)
