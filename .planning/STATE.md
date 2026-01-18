@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 2 - Core Rotation Infrastructure
-**Plan:** Not started
-**Status:** Ready to plan
-**Last activity:** 2026-01-18 — v1.1 roadmap created
+**Plan:** 1 (of 6)
+**Status:** In progress
+**Last activity:** 2026-01-18 — Completed 02-01-PLAN.md (Rotation config types and utilities)
 
-**Progress:** ██████░░░░░░░░░░░░░░░ 15% (1/6 phases complete: Phase 1 of 6)
+**Progress:** ███████░░░░░░░░░░░░░ 18% (1.17/6 phases complete: Phase 1 complete, Plan 02-01 of 6 complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T18:28:48Z
-**Stopped at:** v1.1 roadmap created, ready for Phase 2 planning
+**Last session:** 2026-01-18T18:27:39Z
+**Stopped at:** Completed 02-01-PLAN.md (RotationConfig interface, parseSize utility, FileTransport rotation config support)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,9 +44,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Execute `/gsd:plan-phase 2` to create detailed plan for Core Rotation Infrastructure
-- Implement size-based rotation with atomic file switching
-- Add backward-compatible rotation configuration
+- Execute next plan in Phase 2 (02-02: Size checking logic)
+- Implement size checking logic to trigger rotation
+- Add atomic rotation sequence (close → rename → create)
 
 ## Decisions Made
 
@@ -65,6 +65,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Size-based rotation before time-based | Simpler to test, provides immediate value, foundational infrastructure |
 | 2026-01-18 | Async fire-and-forget compression | Avoid blocking event loop, non-blocking requirement |
 | 2026-01-18 | Error handling as final phase | All features must work before comprehensive hardening |
+| 2026-01-18 | @ts-expect-error for intentionally-unused fields | TypeScript noUnusedLocals conflicts with planned field storage; comments document future use |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -113,8 +114,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Todos
 
 **Immediate:**
-- [ ] Plan Phase 2: Core Rotation Infrastructure
-- [ ] Implement RotationConfig interface
+- [x] Plan Phase 2: Core Rotation Infrastructure
+- [x] Implement RotationConfig interface
 - [ ] Add size checking logic to FileTransport
 - [ ] Implement atomic rotation sequence
 
@@ -126,11 +127,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 0/5 phases complete (0%)
+**v1.1 Log Rotation Milestone:** 1/5 phases started (17%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
-| 2 | Core Rotation Infrastructure | 0/6 | Planned |
+| 2 | Core Rotation Infrastructure | 1/6 | In Progress |
 | 3 | Time-based Rotation | 0/5 | Planned |
 | 4 | Async Compression | 0/5 | Planned |
 | 5 | Retention Cleanup | 0/5 | Planned |
