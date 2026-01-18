@@ -13,6 +13,25 @@ export interface Transport {
 }
 
 /**
+ * Rotation configuration options
+ *
+ * @remarks
+ * Rotation is an internal concern of FileTransport.
+ * When rotation config is provided, FileTransport automatically
+ * rotates log files when they exceed the size threshold.
+ *
+ * Size can be specified as:
+ * - Number: Bytes (e.g., 104857600 for 100MB)
+ * - String: Human-readable format (e.g., '100MB', '1.5GB', '500KB')
+ *
+ * Default maxSize: 100MB (104857600 bytes)
+ */
+export interface RotationConfig {
+    /** Maximum file size before rotation (default: '100MB') */
+    maxSize?: string | number;
+}
+
+/**
  * A single log entry
  */
 export interface LogEntry {
@@ -41,6 +60,8 @@ export interface LoggerConfig {
     timestampFormat?: 'time' | 'iso';
     /** File path shorthand for single file logging */
     file?: string;
+    /** Rotation configuration for file transport */
+    rotation?: RotationConfig;
     /** Array of transports (empty = no output, undefined = default console) */
     transports?: Transport[];
     /** Whether to include console transport in default transports */
