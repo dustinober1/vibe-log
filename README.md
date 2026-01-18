@@ -422,6 +422,36 @@ configure({
 
 **Benefits:** Rotated files compressed automatically, disk space reduced 5-10x
 
+**Add Retention to Existing Rotation:**
+
+Before (rotation with compression, no retention):
+```typescript
+configure({
+    file: './logs/app.log',
+    rotation: {
+        maxSize: '100MB',
+        compressionLevel: 6
+    }
+});
+```
+
+After (with retention cleanup):
+```typescript
+configure({
+    file: './logs/app.log',
+    rotation: {
+        maxSize: '100MB',
+        compressionLevel: 6,
+        maxFiles: 20,    // Keep max 20 files
+        maxAge: 30       // Delete files older than 30 days
+    }
+});
+```
+
+**Benefits:** Automatic cleanup of old log files prevents disk exhaustion
+
+**Note:** Retention cleanup runs automatically after each rotation. Files are deleted only if they exceed BOTH maxFiles AND maxAge thresholds.
+
 ### How It Works
 
 1. **Size Check**: After each log write, the file size is checked
