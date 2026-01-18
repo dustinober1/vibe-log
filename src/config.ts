@@ -1,7 +1,6 @@
 import type { LoggerConfig } from './types';
 import { FileTransport } from './transports/file-transport';
 import { ConsoleTransport } from './transports/console-transport';
-import type { Transport } from './transports/transport';
 
 /**
  * Internal configuration type with required core fields
@@ -56,7 +55,7 @@ let currentConfig: InternalConfig = { ...defaultConfig };
  * configure({ transports: [new FileTransport('./app.log')] });
  * ```
  */
-export function configure(config: Partial<LoggerConfig>): Required<LoggerConfig> {
+export function configure(config: Partial<LoggerConfig>): LoggerConfig {
     // File shorthand: convert file string to FileTransport
     if (config.file && !config.transports) {
         const fileTransport = new FileTransport(config.file);
