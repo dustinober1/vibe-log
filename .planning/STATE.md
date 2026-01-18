@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T20:35:00Z
+**Last Updated:** 2026-01-18T21:00:00Z
 
 ## Project Reference
 
@@ -11,17 +11,17 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Current Position
 
-**Phase:** Phase 4 - Async Compression
-**Plan:** 05 of 5
-**Status:** Phase verified
-**Last activity:** 2026-01-18 — Completed compression documentation in README.md
+**Phase:** Phase 5 - Retention Cleanup
+**Plan:** 01 of 5
+**Status:** Phase planned
+**Last activity:** 2026-01-18 — Created 5 plans for retention cleanup phase
 
-**Progress:** █████████░░░░░░░░ 55% (3.5/6 phases complete: Phases 1-3 complete, Phase 4 complete)
+**Progress:** ████████░░░░░░░ 58% (4/6 phases planned: Phases 1-4 complete, Phase 5 planned)
 
 ## Session Continuity
 
 **Last session:** 2026-01-18T20:32:21Z
-**Stopped at:** Completed 04-05-PLAN.md (compression documentation)
+**Stopped at:** Completed Phase 4 compression documentation
 **Resume file:** None
 
 ## Alignment Status
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** IN PROGRESS 🔨 (3.5/6 phases complete - Phase 4 done, Phase 5 planned)
+**Status:** IN PROGRESS 🔨 (4/6 phases complete - Phase 5 planned, ready for execution)
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -44,8 +44,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Phase 4: Async gzip compression (5 plans - COMPLETE ✅)
-- Phase 5: Retention cleanup (5 plans)
+- Phase 5: Retention cleanup (5 plans - PLANNED ✅)
 - Phase 6: Error handling and documentation (6 plans)
 
 ## Decisions Made
@@ -114,6 +113,12 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Documentation structure for compression features | Conceptual → Configuration examples → Error handling → Migration guide for clear adoption path |
 | 2026-01-18 | Compression level trade-offs documented | Table shows speed/size trade-offs (1-9) to guide user choice |
 | 2026-01-18 | Migration guide focuses on incremental adoption | Add compression to existing rotation rather than complete rewrite |
+| 2026-01-18 | Retention policy: AND logic (maxFiles AND maxAge) | Both conditions must be met before file deletion (conservative approach) |
+| 2026-01-18 | Retention defaults: 20 files, 30 days | Production-safe defaults prevent accidental data loss |
+| 2026-01-18 | After-rotation cleanup trigger | Simpler than scheduled cleanup, integrates with existing rotation flow |
+| 2026-01-18 | Filename date parsing for age sorting | Faster than fs.stat, uses existing YYYY-MM-DD format |
+| 2026-01-18 | Best-effort deletion with error handling | Continue on locked files, log partial results |
+| 2026-01-18 | Both retention fields required together | Validation ensures maxFiles and maxAge are both specified |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -130,7 +135,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Output from v1.0:** Transport interface, FileTransport, ConsoleTransport, 97.24% test coverage
 
 **Research Inputs:**
-- Research SUMMARY.md confirms 5-phase structure is appropriate
+- Research SUMMARY.md confirms 6-phase structure is appropriate
 - Node.js built-in modules sufficient (fs, zlib, stream, path)
 - Critical pitfalls identified: stream data loss, file handle leaks, event loop blocking
 
@@ -168,6 +173,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Test isolation: Use dedicated test directories to avoid interference between test suites
 - Comprehensive error testing: Test error scenarios naturally instead of complex mocking
 - Async testing with delays: Use setTimeout to verify fire-and-forget behavior
+- Retention cleanup: After-rotation trigger with 20ms delay (after compression)
+- Filename date parsing: Extract YYYY-MM-DD from rotated filenames for age calculation
+- AND logic enforcement: Both maxFiles AND maxAge must be exceeded before deletion
+- Best-effort deletion: Continue on errors, log partial results, emit error events
 
 **Architecture Decisions:**
 - Rotation is internal concern of FileTransport (no breaking API changes)
@@ -176,6 +185,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Non-blocking compression critical for performance
 - Utility functions exported from utils/rotation for reusability
 - Compression utilities in utils/compression for modularity
+- Retention utilities in utils/retention for cleanup logic
+- Retention policy uses AND logic (conservative approach)
+- Cleanup triggered after rotation (fire-and-forget pattern)
 
 **Known Pitfalls to Avoid:**
 1. Stream data loss: use `stream.end()` not `stream.destroy()`
@@ -187,6 +199,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 7. Memory issues with large files: Use stream-based compression, not zlib.gzip()
 8. Partial .gz files on error: pipeline() automatically cleans up on error
 9. Cross-device rename failures: Handle EXDEV error, leave file in place
+10. Deleting all log files: Never leave zero files (protect current active file)
+11. Timezone issues with age calculation: Use UTC consistently for date parsing
+12. Blocking writes during cleanup: Use fire-and-forget pattern with setTimeout
 
 ## Todos
 
@@ -217,14 +232,19 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 04-03: Add compression scheduling to FileTransport
 - [x] Plan 04-04: Add comprehensive tests for compression (TDD)
 - [x] Plan 04-05: Document compression features
+- [x] Plan 05-01: Extend RotationConfig with maxFiles and maxAge fields
+- [x] Plan 05-02: Create retention utility functions (TDD)
+- [x] Plan 05-03: Add retention state to FileTransport
+- [x] Plan 05-04: Integrate retention cleanup into rotation flow
+- [x] Plan 05-05: Add retention tests and documentation
 
 **Upcoming:**
-- [ ] Phase 5: Retention cleanup
-- [ ] Phase 6: Error handling and documentation
+- [ ] Execute Phase 5: Retention cleanup (5 plans)
+- [ ] Phase 6: Error handling and documentation (6 plans)
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 3.5/6 phases complete (58%)
+**v1.1 Log Rotation Milestone:** 4/6 phases complete (67%)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
