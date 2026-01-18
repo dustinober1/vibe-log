@@ -4,6 +4,63 @@ import type { Transport } from './transport';
 import type { LogEntry, LoggerConfig } from '../types';
 
 /**
+ * Parse human-readable file size to bytes
+ *
+ * @param size - Size as number (bytes) or string (e.g., '100MB', '1.5GB', '500KB')
+ * @returns Size in bytes
+ * @throws {Error} If size string is invalid
+ *
+ * @example
+ * ```typescript
+ * parseSize('100MB');    // 104857600
+ * parseSize('1.5GB');    // 1610612736
+ * parseSize('500KB');    // 512000
+ * parseSize(104857600);  // 104857600
+ * ```
+ */
+function parseSize(size: string | number): number {
+    // If already a number, return as-is
+    if (typeof size === 'number') {
+        if (size <= 0) {
+            throw new Error(`Size must be positive, got ${size}`);
+        }
+        return size;
+    }
+
+    // Parse string format: "100MB", "1.5GB", etc.
+    const units: Record<string, number> = {
+        'B': 1,
+        'KB': 1024,
+        'MB': 1024 ** 2,
+        'GB': 1024 ** 3,
+        'TB': 1024 ** 4,
+        'PB': 1024 ** 5,
+    };
+
+    const trimmed = size.trim();
+    const match = trimmed.match(/^([\d.]+)\s*([A-Z]+)$/i);
+
+    if (!match) {
+        throw new Error(`Invalid size format: "${size}". Expected format: "100MB", "1.5GB", etc.`);
+    }
+
+    const value = parseFloat(match[1]);
+    const unit = match[2].toUpperCase();
+
+    if (!(unit in units)) {
+        throw new Error(`Unknown size unit: "${unit}". Supported: B, KB, MB, GB, TB, PB`);
+    }
+
+    const bytes = Math.round(value * units[unit]);
+
+    if (bytes <= 0) {
+        throw new Error(`Size must be positive, got "${size}" (${bytes} bytes)`);
+    }
+
+    return bytes;
+}
+
+/**
  * File transport for writing logs to a file
  *
  * Uses Node.js streams for efficient async file writing.
