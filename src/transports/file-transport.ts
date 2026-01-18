@@ -171,7 +171,7 @@ export class FileTransport implements Transport {
 
         // Parse rotation config if provided (stored for Phase 2 implementation)
         this.rotationEnabled = false;
-        if (options?.maxSize) {
+        if (options !== undefined && options.maxSize !== undefined) {
             this.maxSize = parseSize(options.maxSize);
             this.rotationEnabled = true;
         }
