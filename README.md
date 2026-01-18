@@ -49,6 +49,30 @@ log.error('API', 'Request failed', { status: 500 });
 
 ---
 
+## Limitations
+
+**Multi-Process Writing: NOT SUPPORTED**
+
+log-vibe does **NOT** support multiple processes writing to the same log file. This is a known limitation that will cause:
+- Data corruption
+- Lost log entries
+- Rotation failures
+- Race conditions
+
+**Workarounds:**
+- Use separate log files per process: `./logs/app-${process.pid}.log`
+- Use a dedicated logging server (recommended for production)
+- Use syslog or external logging service
+
+See [Production Deployment](#production-deployment) for examples.
+
+**Other Limitations:**
+- No built-in log aggregation (use ELK, Splunk, etc.)
+- No structured logging output (plain text only)
+- No multi-process safe rotation
+
+---
+
 ## Transports
 
 log-vibe supports multiple transports for flexible log output. Logs can be written to the console, files, or custom destinations.
