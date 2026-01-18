@@ -9,7 +9,7 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 ## Current Status
 
 **Active Milestone:** v1.1 - Log Rotation
-**Status:** Phase 2 planned, ready for execution
+**Status:** Phase 3 planned, ready for execution
 
 ---
 
@@ -127,6 +127,16 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 4. Timer for midnight scheduling is automatically cleaned up when logger is closed
 5. User can combine size-based and daily rotation (hybrid strategy)
 
+**Plans:**
+
+| Plan | Wave | Description | Status |
+|------|------|-------------|--------|
+| [03-01-PLAN.md](./phases/03-time-based-rotation/03-01-PLAN.md) | 1 | Add pattern config and midnight calculation utility | 📋 Planned |
+| [03-02-PLAN.md](./phases/03-time-based-rotation/03-02-PLAN.md) | 2 | Implement timer scheduling and cleanup | 📋 Planned |
+| [03-03-PLAN.md](./phases/03-time-based-rotation/03-03-PLAN.md) | 3 | Implement time-based rotation trigger (TDD) | 📋 Planned |
+| [03-04-PLAN.md](./phases/03-time-based-rotation/03-04-PLAN.md) | 4 | Integrate pattern into public API | 📋 Planned |
+| [03-05-PLAN.md](./phases/03-time-based-rotation/03-05-PLAN.md) | 5 | Document time-based rotation | 📋 Planned |
+
 **Out of Scope:** Compression (Phase 4), retention cleanup (Phase 5)
 
 ---
@@ -230,7 +240,7 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 | ----------------- | --------- | -------------- | ----------- | ---------- |
 | 1. Transport System | v1.0      | 4/4            | Complete    | 2026-01-18 |
 | 2. Core Rotation Infrastructure | v1.1 | 6/6 | Complete | 2026-01-18 |
-| 3. Time-based Rotation | v1.1 | 0/5 | Not started | - |
+| 3. Time-based Rotation | v1.1 | 0/5 | Planned | - |
 | 4. Async Compression | v1.1 | 0/5 | Not started | - |
 | 5. Retention Cleanup | v1.1 | 0/5 | Not started | - |
 | 6. Error Handling & Production Hardening | v1.1 | 0/6 | Not started | - |
@@ -246,6 +256,5 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 - [Research Summary](./research/SUMMARY.md)
 
 ---
-
 *Roadmap maintained by: GSD planning workflow*
 *Last updated: 2026-01-18*
