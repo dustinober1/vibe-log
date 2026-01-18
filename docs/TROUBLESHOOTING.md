@@ -237,3 +237,52 @@ configure({
   transports: [new SyslogTransport()]
 });
 ```
+
+## Log File Not Growing
+
+### Symptoms
+
+- Log file exists but no new entries
+- Application logs work in console but not file
+- No errors reported
+
+### Diagnostic Steps
+
+1. Check if file transport is configured:
+   ```typescript
+   console.log(require('log-vibe').getConfig());
+   ```
+
+2. Check file permissions:
+   ```bash
+   ls -la /path/to/logs/app.log
+   ```
+
+3. Monitor file for changes:
+   ```bash
+   tail -f /path/to/logs/app.log
+   ```
+
+### Solutions
+
+**Verify configuration:**
+```typescript
+import { configure } from 'log-vibe';
+
+configure({
+  file: './logs/app.log',  // Make sure this is set
+  console: false           // Ensure file logging is enabled
+});
+```
+
+**Check error events:**
+```typescript
+import { FileTransport } from 'log-vibe';
+
+const transport = new FileTransport('./logs/app.log');
+transport.on('error', (err) => {
+  console.error('Transport error:', err);
+});
+
+configure({ transports: [transport] });
+```
