@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 07 - Public API Integration Fix
-**Plan:** 07 of 7
-**Status:** In Progress
-**Last activity:** 2026-01-18 — Gap audit identified critical configure() passthrough issue
+**Plan:** 01 of 1 (COMPLETE)
+**Status:** Phase Complete
+**Last activity:** 2026-01-18 — Completed configure() passthrough fix
 
-**Progress:** ██████████░ 85.7% (6/7 phases complete, Phase 07 blocks v1.1 release)
+**Progress:** ███████████ 100% (7/7 phases complete, v1.1 ready for release)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T22:59:18Z
-**Stopped at:** Completed Phase 6 Plan 06 (Production deployment documentation)
+**Last session:** 2026-01-18T23:43:13Z
+**Stopped at:** Completed Phase 07 Plan 01 (Public API integration fix)
 **Resume file:** None
 
 ## Alignment Status
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 **Status:** SHIPPED ✅
 
 **v1.1 Scope:** Log rotation with compression and retention
-**Status:** ⚠️ GAP FOUND - Critical public API integration issue (Phase 07 required)
+**Status:** ✅ COMPLETE - All 7 phases finished, public API gap closed, ready for release
 
 **Completed Work (v1.0):**
 - Transport interface defined with log() and optional close() methods
@@ -44,9 +44,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Implement Phase 07: Public API Integration Fix
-- Verify audit passes (integration 9/9, flows 4/4)
-- v1.1 release preparation
+- Update v1.1-MILESTONE-AUDIT.md integration score to 9/9
+- Prepare v1.1 release notes
+- Tag and release v1.1
 
 ## Decisions Made
 
@@ -157,7 +157,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | Issue | Impact | Status |
 |-------|--------|--------|
 | Integration test isolation issue | Tests fail when run in parallel due to shared directory cleanup | ✅ Resolved in 06-02 |
-| configure() passthrough gap | Users cannot access compression/retention via shorthand API | 🔧 Phase 07 required |
+| configure() passthrough gap | Users cannot access compression/retention via shorthand API | ✅ Resolved in 07-01 |
 
 ## Dependencies
 
@@ -172,10 +172,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 ## Performance Metrics
 
-**Test Coverage:** 216/216 tests passing (100%)
+**Test Coverage:** 218/218 tests passing (100%)
 **Test Files:** 18 test files
 **Lines of Code (v1.0):** 1,048 lines TypeScript
-**Lines Added (06-02):** 1 line (randomUUID import) + 1 line (super() call)
+**Lines Added (07-01):** 21 lines (7 type definition + 14 passthrough logic)
+**Test Coverage Added (07-01):** 27 lines (2 new tests)
 
 **Note:** All tests now pass in parallel execution - test isolation issue resolved with UUID-based directories
 
@@ -233,6 +234,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Cleanup triggered after rotation (fire-and-forget pattern)
 - EventEmitter pattern for error handling: Emit events instead of throwing to prevent app crashes
 - Error classification available to users: Export ErrorClass and classifyError for monitoring strategies
+- Public API integration: All FileTransportOptions fields must be passed through configure() shorthand API
+- !== undefined checks: Allow 0 as valid value for maxFiles/maxAge edge cases
 
 **Known Pitfalls to Avoid:**
 1. Stream data loss: use `stream.end()` not `stream.destroy()`
@@ -296,17 +299,17 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Plan 06-06: Add deployment examples
 
 **Immediate (Phase 07):**
-- [ ] Update src/config.ts type definition to include compressionLevel, maxFiles, maxAge
-- [ ] Add field passthrough logic in configure() function
-- [ ] Add test for compressionLevel passthrough
-- [ ] Add test for maxFiles/maxAge passthrough
+- [x] Update src/config.ts type definition to include compressionLevel, maxFiles, maxAge
+- [x] Add field passthrough logic in configure() function
+- [x] Add test for compressionLevel passthrough
+- [x] Add test for maxFiles/maxAge passthrough
 
 **Upcoming:**
 - [ ] v1.1 release preparation
 
 ## Roadmap Progress
 
-**v1.1 Log Rotation Milestone:** 6/7 phases complete (85.7%), GAP FOUND ⚠️
+**v1.1 Log Rotation Milestone:** 7/7 phases complete (100%), READY FOR RELEASE ✅
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
@@ -315,6 +318,6 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 4 | Async Compression | 5/5 | Complete ✓ |
 | 5 | Retention Cleanup | 5/5 | Complete ✓ |
 | 6 | Error Handling & Production Hardening | 6/6 | Complete ✓ |
-| 7 | Public API Integration Fix | 1/1 | Planned 🔧 |
+| 7 | Public API Integration Fix | 1/1 | Complete ✓ |
 
-**v1.1 Milestone Status:** PHASE 07 REQUIRED - Critical configure() passthrough gap
+**v1.1 Milestone Status:** ALL PHASES COMPLETE - Integration score 9/9, E2E flows 4/4 working
