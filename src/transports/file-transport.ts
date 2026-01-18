@@ -533,4 +533,41 @@ export class FileTransport implements Transport {
             this.rotationTimer = undefined;
         }
     }
+
+    /**
+     * Perform retention cleanup of old log files
+     *
+     * @returns Promise that resolves when cleanup completes
+     *
+     * @remarks
+     * This method implements retention cleanup using the cleanupOldLogs utility.
+     * - Returns early if retention config not set (both maxFiles and maxAge required)
+     * - Extracts file path components (directory, base name, extension)
+     * - Calls cleanupOldLogs with retention configuration
+     * - Emits 'error' event if any cleanup failures occurred (non-fatal)
+     *
+     * Error handling: Cleanup errors are non-fatal and emitted as 'error' events
+     * to allow logging to continue while alerting the application.
+     */
+    private async performRetentionCleanup(): Promise<void> {
+        // Skip if retention config not set
+        if (this.maxFiles === undefined || this.maxAge === undefined) {
+            return;
+        }
+
+        // Extract directory, base filename, and extension
+        const dir = path.dirname(this.filePath);
+        const base = path.basename(this.filePath, path.extname(this.filePath));
+        const ext = path.extname(this.filePath);
+
+        // Perform cleanup
+        const result = await cleanupOldLogs(dir, base, ext, this.maxFiles, this.maxAge);
+
+        // Emit error event if any cleanup failures occurred
+        if (result.errors.length > 0) {
+            this.stream.emit('error', new Error(
+                `Retention cleanup completed with ${result.errors.length} error(s): ${result.errors.join(', ')}`
+            ));
+        }
+    }
 }
