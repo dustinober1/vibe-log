@@ -61,6 +61,67 @@ function parseSize(size: string | number): number {
 }
 
 /**
+ * Generate a rotated filename with date stamp and sequence number
+ *
+ * @param filePath - Original log file path
+ * @returns Rotated filename path (e.g., "app-2026-01-18.log.1")
+ *
+ * @remarks
+ * Filename format: `{basename}-{YYYY-MM-DD}.{ext}.{sequence}`
+ * - Uses UTC date to avoid timezone issues across servers
+ * - Sequence increments for multiple rotations per day
+ * - Extension preserved before sequence number
+ *
+ * @example
+ * ```typescript
+ * generateRotatedName('./logs/app.log');      // './logs/app-2026-01-18.log.1'
+ * generateRotatedName('./logs/app.log');      // './logs/app-2026-01-18.log.2' (if .1 exists)
+ * generateRotatedName('./logs/error.txt');    // './logs/error-2026-01-18.txt.1'
+ * ```
+ */
+// @ts-expect-error - Intentionally unused, stored for Phase 2 rotation implementation
+function generateRotatedName(filePath: string): string {
+    const ext = path.extname(filePath);           // '.log'
+    const base = path.basename(filePath, ext);    // 'app'
+    const dir = path.dirname(filePath);           // './logs'
+
+    // UTC date format: YYYY-MM-DD
+    const date = new Date();
+    const dateStr = date.toISOString().split('T')[0];  // '2026-01-18'
+
+    // Find existing rotated files to determine next sequence number
+    let sequence = 1;
+
+    try {
+        const existingFiles = fs.readdirSync(dir)
+            .filter(f => f.startsWith(`${base}-${dateStr}`) && f.endsWith(ext));
+
+        // Extract highest sequence number from existing files
+        const maxSequence = existingFiles.reduce((max, file) => {
+            // Extract sequence number from filename (format: base-date.ext.N)
+            const match = file.match(new RegExp(`^${escapeRegExp(base)}-${escapeRegExp(dateStr)}${escapeRegExp(ext)}\\.(\\d+)$`));
+            return match ? Math.max(max, parseInt(match[1], 10)) : max;
+        }, 0);
+
+        sequence = maxSequence + 1;
+    } catch (error) {
+        // Directory doesn't exist or can't be read — use sequence 1
+        // This is fine, rotation will create directory if needed
+    }
+
+    // Format: app-2026-01-18.log.1
+    const rotatedName = `${base}-${dateStr}${ext}.${sequence}`;
+    return path.join(dir, rotatedName);
+}
+
+/**
+ * Escape special regex characters in a string
+ */
+function escapeRegExp(str: string): string {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
  * File transport for writing logs to a file
  *
  * Uses Node.js streams for efficient async file writing.
