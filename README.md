@@ -685,6 +685,292 @@ If cleanup fails (locked files, permissions, etc.):
 
 ---
 
+## Production Deployment
+
+### Docker Deployment
+
+**Dockerfile example:**
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy application code
+COPY . .
+
+# Create log directory with proper permissions
+RUN mkdir -p /app/logs && \
+    chown -R node:node /app/logs
+
+USER node
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD node -e "const fs=require('fs'); try{fs.statSync('/app/logs/app.log');process.exit(0)}catch{process.exit(1)}"
+
+CMD ["node", "index.js"]
+```
+
+**docker-compose.yml example:**
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    volumes:
+      # Persist logs outside container
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('fs').statSync('/app/logs/app.log')"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+```
+
+**Configuration for Docker:**
+```typescript
+import { configure } from 'log-vibe';
+
+configure({
+  file: '/app/logs/app.log',
+  rotation: {
+    maxSize: '100MB',
+    pattern: 'daily',
+    compressionLevel: 6,
+    maxFiles: 20,
+    maxAge: 30
+  },
+  console: false  // Disable console in production
+});
+```
+
+### Kubernetes Deployment
+
+**Deployment with persistent volume:**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      volumes:
+      - name: logs
+        emptyDir: {}  # or use PersistentVolumeClaim
+```
+
+**Multi-pod logging (separate files per pod):**
+```typescript
+import { configure } from 'log-vibe';
+
+// Use pod name or UID for separate log files
+const logFile = `/app/logs/app-${process.env.POD_NAME || 'default'}.log`;
+
+configure({
+  file: logFile,
+  rotation: {
+    maxSize: '100MB',
+    compressionLevel: 6,
+    maxFiles: 10,
+    maxAge: 7
+  },
+  console: false
+});
+```
+
+**Sidecar logging pattern (recommended):**
+```yaml
+# Main application writes to stdout
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+spec:
+  template:
+    spec:
+      containers:
+      - name: app
+        image: myapp:latest
+        # Configure log-vibe to write to stdout only
+        env:
+        - name: LOG_TO_FILE
+          value: "false"
+      # Sidecar container collects logs and writes to disk
+      - name: log-collector
+        image: log-collector:latest
+        volumeMounts:
+        - name: logs
+          mountPath: /logs
+      volumes:
+      - name: logs
+        persistentVolumeClaim:
+          claimName: log-pvc
+```
+
+### Cloud Logging Patterns
+
+**Google Cloud Logging:**
+```typescript
+import { configure } from 'log-vibe';
+
+// Write to stdout, let Cloud Logging agent handle it
+configure({
+  console: true,  // Cloud Logging picks up stdout
+  useColors: false,  // Disable colors for cloud logs
+  timestampFormat: 'iso'
+});
+
+// Or write to file for Cloud Logging agent
+configure({
+  file: '/var/log/app/app.log',
+  rotation: { maxSize: '100MB' }
+});
+```
+
+**AWS CloudWatch:**
+```typescript
+import { configure } from 'log-vibe';
+
+// Write to file for CloudWatch agent
+configure({
+  file: '/var/log/nodejs/app.log',
+  rotation: {
+    maxSize: '100MB',
+    pattern: 'daily',
+    compressionLevel: 6
+  },
+  console: false
+});
+```
+
+**CloudWatch agent configuration:**
+```json
+{
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "file_path": "/var/log/nodejs/app.log",
+            "log_group_name": "/aws/nodejs/app",
+            "log_stream_name": "{instance_id}"
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+**Azure Monitor:**
+```typescript
+import { configure } from 'log-vibe';
+
+configure({
+  file: '/var/log/app/app.log',
+  rotation: { maxSize: '100MB' },
+  console: false
+});
+```
+
+**Log Analytics agent configuration:**
+```yaml
+- name: app-logs
+  path: /var/log/app/*.log
+  type: file
+```
+
+### Dedicated Logging Server (Multi-Process)
+
+For applications requiring multi-process logging, use a dedicated logging server:
+
+**Architecture:**
+```
+App Process 1 ──┐
+App Process 2 ──┼──> Logging Server ──> Disk
+App Process 3 ──┘
+```
+
+**Logging server example:**
+```typescript
+// server.js - Dedicated logging server
+import express from 'express';
+import { configure, log } from 'log-vibe';
+
+configure({
+  file: './logs/central.log',
+  rotation: {
+    maxSize: '500MB',
+    pattern: 'daily',
+    compressionLevel: 6,
+    maxFiles: 30,
+    maxAge: 90
+  }
+});
+
+const app = express();
+app.use(express.json());
+
+app.post('/log', (req, res) => {
+  const { level, context, message, data } = req.body;
+  log[level](context, message, data);
+  res.sendStatus(200);
+});
+
+app.listen(3001);
+```
+
+**Client applications send logs:**
+```typescript
+// client.js - Application process
+import fetch from 'node-fetch';
+
+async function sendLog(level: string, context: string, message: string, data?: any) {
+  await fetch('http://localhost:3001/log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ level, context, message, data })
+  }).catch(() => {});  // Don't throw
+}
+
+// Use in application
+await sendLog('info', 'App', 'Started');
+await sendLog('error', 'Database', 'Connection failed', { code: 'ECONNREFUSED' });
+```
+
+---
+
 ## API
 
 ### Log Levels
