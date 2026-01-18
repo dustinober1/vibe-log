@@ -79,7 +79,6 @@ function parseSize(size: string | number): number {
  * generateRotatedName('./logs/error.txt');    // './logs/error-2026-01-18.txt.1'
  * ```
  */
-// @ts-expect-error - Intentionally unused, stored for Phase 2 rotation implementation
 function generateRotatedName(filePath: string): string {
     const ext = path.extname(filePath);           // '.log'
     const base = path.basename(filePath, ext);    // 'app'
@@ -249,6 +248,71 @@ export class FileTransport implements Transport {
                 } else {
                     resolve();
                 }
+            });
+        });
+    }
+
+    /**
+     * Perform atomic rotation: close stream → rename file → create new stream
+     *
+     * @returns Promise that resolves when rotation completes
+     *
+     * @remarks
+     * Atomic rotation sequence:
+     * 1. Close current stream (stream.end() flushes all buffered data)
+     * 2. Rename file to date-stamped name (fs.rename is atomic on most filesystems)
+     * 3. Create new stream for continued logging
+     *
+     * This method MUST be called with rotating flag set to prevent concurrent writes.
+     *
+     * @throws {Error} If stream close fails
+     * @throws {Error} If file rename fails
+     */
+    // @ts-expect-error - Intentionally unused, stored for Phase 2 rotation implementation
+    private async performRotation(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            // Step 1: Close current stream (flushes all buffered data)
+            this.stream.end((closeErr: Error | null | undefined) => {
+                if (closeErr) {
+                    reject(closeErr);
+                    return;
+                }
+
+                // Step 2: Rename file to date-stamped name
+                const rotatedPath = generateRotatedName(this.filePath);
+
+                fs.rename(this.filePath, rotatedPath, (renameErr: NodeJS.ErrnoException | null) => {
+                    if (renameErr) {
+                        // Rename failed — try to recover by reopening original file
+                        this.stream = fs.createWriteStream(this.filePath, {
+                            flags: 'a',
+                            encoding: 'utf8',
+                            mode: 0o666,
+                        });
+
+                        // Re-attach error handler
+                        this.stream.on('error', (err) => {
+                            console.error(`[FileTransport] Write error for ${this.filePath}: ${err.message}`);
+                        });
+
+                        reject(renameErr);
+                        return;
+                    }
+
+                    // Step 3: Create new stream for continued logging
+                    this.stream = fs.createWriteStream(this.filePath, {
+                        flags: 'a',
+                        encoding: 'utf8',
+                        mode: 0o666,
+                    });
+
+                    // Re-attach error handler to new stream
+                    this.stream.on('error', (err) => {
+                        console.error(`[FileTransport] Write error for ${this.filePath}: ${err.message}`);
+                    });
+
+                    resolve();
+                });
             });
         });
     }
