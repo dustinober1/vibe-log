@@ -155,6 +155,30 @@ export class FileTransport implements Transport {
             this.compressionLevel = level;
         }
 
+        // Parse retention config if provided
+        if (options !== undefined && options.maxFiles !== undefined) {
+            const maxFiles = options.maxFiles;
+            if (maxFiles < 1) {
+                throw new Error(`maxFiles must be at least 1, got ${maxFiles}`);
+            }
+            this.maxFiles = maxFiles;
+        }
+
+        if (options !== undefined && options.maxAge !== undefined) {
+            const maxAge = options.maxAge;
+            if (maxAge < 1) {
+                throw new Error(`maxAge must be at least 1 day, got ${maxAge}`);
+            }
+            this.maxAge = maxAge;
+        }
+
+        // Retention config requires both maxFiles AND maxAge
+        const hasMaxFiles = this.maxFiles !== undefined;
+        const hasMaxAge = this.maxAge !== undefined;
+        if (hasMaxFiles !== hasMaxAge) {
+            throw new Error('Retention config requires both maxFiles AND maxAge to be specified');
+        }
+
         // Ensure directory exists (Node.js >= 10.12.0)
         const dir = path.dirname(filePath);
         try {
