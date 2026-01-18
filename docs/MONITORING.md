@@ -458,3 +458,134 @@ fi
 
 exit 0
 ```
+
+## Alerting Strategies
+
+### Alert Levels
+
+| Level | Threshold | Action |
+|-------|-----------|--------|
+| Info | Rotation occurred | Log only |
+| Warning | Disk at 80% | Send warning alert |
+| Critical | Disk at 90% | Page on-call engineer |
+| Critical | Disk full (ENOSPC) | Page immediately |
+| Critical | Permission denied | Page immediately |
+| Warning | No rotation in 24h | Investigate |
+
+### Alert Integration Examples
+
+**Send to Slack:**
+```typescript
+async function sendSlackAlert(level: string, message: string, details: any) {
+  const webhook = process.env.SLACK_WEBHOOK_URL;
+
+  await fetch(webhook, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: `[${level.toUpperCase()}] ${message}`,
+      attachments: [{ text: JSON.stringify(details, null, 2) }]
+    })
+  });
+}
+
+transport.on('disk-full', (err) => {
+  sendSlackAlert('critical', 'Log disk full', {
+    path: './logs/app.log',
+    error: err.message
+  });
+});
+```
+
+**Send to Email:**
+```typescript
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  host: 'smtp.example.com',
+  auth: { user, pass }
+});
+
+async function sendEmailAlert(level: string, subject: string, details: any) {
+  await transporter.sendMail({
+    from: 'alerts@example.com',
+    to: 'oncall@example.com',
+    subject: `[${level.toUpperCase()}] ${subject}`,
+    text: JSON.stringify(details, null, 2)
+  });
+}
+
+transport.on('permission-denied', (err) => {
+  sendEmailAlert('critical', 'Log permission denied', {
+    path: './logs/app.log',
+    error: err.message,
+    timestamp: new Date()
+  });
+});
+```
+
+**Send to Prometheus Pushgateway:**
+```typescript
+async function sendToPrometheus(metric: string, value: number, labels: Record<string, string>) {
+  const url = process.env.PROMETHEUS_PUSHGATEWAY;
+  const labelStr = Object.entries(labels).map(([k, v]) => `${k}="${v}"`).join(',');
+
+  await fetch(`${url}/metrics/job/log-vibe/${metric}`, {
+    method: 'POST',
+    body: `${metric}{${labelStr}} ${value}\n`
+  });
+}
+
+transport.on('error', (err) => {
+  sendToPrometheus('log_vibe_errors_total', 1, {
+    code: err.code,
+    path: './logs/app.log'
+  });
+});
+```
+
+## Metrics Collection
+
+### Key Metrics to Track
+
+1. **Error count by type**: Total errors, ENOSPC, EACCES, etc.
+2. **Rotation count**: Number of rotations performed
+3. **Disk usage**: Percentage and available space
+4. **Log file count**: Total log files in directory
+5. **Log directory size**: Total bytes used by logs
+6. **Write latency**: Time to write log entries
+7. **Rotation latency**: Time to complete rotation
+
+### Metrics Dashboard
+
+Create a metrics endpoint for dashboards:
+
+```typescript
+import express from 'express';
+
+const app = express();
+const metrics = {
+  errors: { total: 0, byCode: {} },
+  rotations: { total: 0, lastTime: null },
+  diskUsage: { percent: 0, available: '0' }
+};
+
+app.get('/metrics', (req, res) => {
+  res.json(metrics);
+});
+
+// Update metrics
+transport.on('error', (err) => {
+  metrics.errors.total++;
+  metrics.errors.byCode[err.code] = (metrics.errors.byCode[err.code] || 0) + 1;
+});
+
+transport.on('rotation', () => {
+  metrics.rotations.total++;
+  metrics.rotations.lastTime = new Date();
+});
+```
+
+---
+
+*See also: [Troubleshooting Guide](./TROUBLESHOOTING.md)*
