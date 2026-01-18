@@ -153,6 +153,7 @@ export class FileTransport implements Transport {
     private rotationInProgress?: Promise<void>;  // Track rotation promise
     private currentFileSize = 0;           // Track current file size
     private rotationTimer?: NodeJS.Timeout;
+    // @ts-expect-error: Field reserved for future use in tracking rotation date
     private lastRotationDate?: Date;
 
     /**
@@ -213,6 +214,11 @@ export class FileTransport implements Transport {
 
         // Create append stream
         this.stream = this.createWriteStream(filePath);
+
+        // Schedule midnight rotation if time-based rotation is enabled
+        if (this.timeBasedRotationEnabled) {
+            this.scheduleMidnightRotation();
+        }
     }
 
     /**
@@ -280,6 +286,9 @@ export class FileTransport implements Transport {
             }
 
             this.closed = true;
+
+            // Clear rotation timer to prevent memory leaks
+            this.clearRotationTimer();
 
             // Remove error handler to avoid "Possible EventEmitter memory leak" warning
             this.stream.removeAllListeners('error');
@@ -452,5 +461,20 @@ export class FileTransport implements Transport {
             // Reschedule for next day (recursive setTimeout prevents drift)
             this.scheduleMidnightRotation();
         }, msUntilMidnight);
+    }
+
+    /**
+     * Clear rotation timer to prevent memory leaks
+     *
+     * @remarks
+     * This method clears the rotation timer if it exists.
+     * Uncleared timers prevent garbage collection and cause memory leaks.
+     * Called during close() to ensure proper cleanup.
+     */
+    private clearRotationTimer(): void {
+        if (this.rotationTimer) {
+            clearTimeout(this.rotationTimer);
+            this.rotationTimer = undefined;
+        }
     }
 }
