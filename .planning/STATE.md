@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18T20:00:00Z
+**Last Updated:** 2026-01-18T20:22:29Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 4 - Async Compression
-**Plan:** 01 of 5
-**Status:** Phase planned
-**Last activity:** 2026-01-18 — Created phase plans for async compression (5 plans in 4 waves)
+**Plan:** 02 of 5
+**Status:** Phase in progress
+**Last activity:** 2026-01-18 — Completed compressRotatedFile utility function (94 lines, stream-based gzip compression)
 
-**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete, Phase 4 planned)
+**Progress:** ██████████░░░░░░░░ 50% (3.0/6 phases complete: Phases 1-3 complete, Phase 4 - 2/5 plans complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T20:00:00Z
-**Stopped at:** Phase 4 planning complete, ready for execution
+**Last session:** 2026-01-18T20:22:29Z
+**Stopped at:** Completed 04-02-PLAN.md (compressRotatedFile utility function)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,7 +44,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Phase 4: Async gzip compression (5 plans in 4 waves - READY)
+- Phase 4: Async gzip compression (5 plans in 4 waves - 2/5 complete)
 - Phase 5: Retention cleanup (5 plans)
 - Phase 6: Error handling and documentation (6 plans)
 
@@ -102,6 +102,8 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | 10ms compression delay | Avoid CPU spike during active logging periods |
 | 2026-01-18 | Stream pipeline for compression | Use pipeline() for proper error handling and automatic cleanup |
 | 2026-01-18 | Failed file handling | Move to failed/ subdirectory for manual inspection |
+| 2026-01-18 | Delete original file after compression | Prevent data loss by keeping uncompressed file until compression succeeds |
+| 2026-01-18 | Cross-device rename error handling | Leave failed file in place if rename fails with EXDEV error |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -212,6 +214,6 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 |-------|------|----------------|--------|
 | 2 | Core Rotation Infrastructure | 6/6 | Complete |
 | 3 | Time-based Rotation | 5/5 | Complete |
-| 4 | Async Compression | 0/5 | Planned |
+| 4 | Async Compression | 2/5 | In Progress |
 | 5 | Retention Cleanup | 0/5 | Planned |
 | 6 | Error Handling & Production Hardening | 0/6 | Planned |
