@@ -1,6 +1,6 @@
 # log-vibe Project State
 
-**Last Updated:** 2026-01-18
+**Last Updated:** 2026-01-18T18:42:35Z
 
 ## Project Reference
 
@@ -12,16 +12,16 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 **Phase:** Phase 2 - Core Rotation Infrastructure
-**Plan:** 4 (of 6)
+**Plan:** 5 (of 6)
 **Status:** In progress
-**Last activity:** 2026-01-18 — Completed 02-04-PLAN.md (Write gating with rotating flag and automatic size checking via checkSizeAndRotate)
+**Last activity:** 2026-01-18T18:42:35Z — Completed 02-05-PLAN.md (Integration tests for rotation functionality with TDD)
 
-**Progress:** ████████░░░░░░░░░░░ 28% (1.67/6 phases complete: Phase 1 complete, Plan 02-04 of 6 complete)
+**Progress:** █████████░░░░░░░░░ 33% (2/6 phases complete: Phase 1 complete, Plan 02-05 of 6 complete)
 
 ## Session Continuity
 
-**Last session:** 2026-01-18T18:34:29Z
-**Stopped at:** Completed 02-04-PLAN.md (Write gating, checkSizeAndRotate method, modified log() method)
+**Last session:** 2026-01-18T18:42:35Z
+**Stopped at:** Completed 02-05-PLAN.md (Integration tests with 15 tests, refactoring)
 **Resume file:** None
 
 ## Alignment Status
@@ -44,9 +44,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - Backward compatibility maintained (zero breaking changes)
 
 **Next Steps:**
-- Execute next plan in Phase 2 (02-05 or 02-06: Integration tests or Config validation)
-- Test rotation workflow end-to-end
-- Add rotation configuration validation
+- Execute next plan in Phase 2 (02-06: Config validation)
+- Complete Phase 2 (Core Rotation Infrastructure)
+- Begin Phase 3: Time-based rotation with midnight scheduling
 
 ## Decisions Made
 
@@ -76,6 +76,10 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 | 2026-01-18 | Fire-and-forget rotation triggering | checkSizeAndRotate called without await to keep log() synchronous |
 | 2026-01-18 | Size checking after write operation | Check size after write to avoid blocking the write operation itself |
 | 2026-01-18 | Rotation deduplication via promise tracking | rotationInProgress promise prevents concurrent rotation checks |
+| 2026-01-18 | TDD approach for rotation tests | RED-GREEN-REFACTOR cycle ensures correctness and comprehensive coverage |
+| 2026-01-18 | Test rotation via public API | parseSize and generateRotatedName tested indirectly through FileTransport behavior |
+| 2026-01-18 | Extract constants for maintainability | DEFAULT_FILE_MODE and STREAM_ENCODING reduce magic numbers |
+| 2026-01-18 | Helper methods eliminate duplication | createWriteStream() and attachErrorHandler() reduce code repetition |
 
 *(Full log in .planning/PROJECT.md)*
 
@@ -132,7 +136,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 - [x] Implement generateRotatedName utility function
 - [x] Implement atomic rotation sequence
 - [x] Add size checking logic to FileTransport
-- [ ] Add integration tests for rotation workflow
+- [x] Add integration tests for rotation workflow
 - [ ] Add rotation configuration validation
 
 **Upcoming:**
@@ -147,7 +151,7 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 | Phase | Goal | Plans Complete | Status |
 |-------|------|----------------|--------|
-| 2 | Core Rotation Infrastructure | 4/6 | In Progress |
+| 2 | Core Rotation Infrastructure | 5/6 | In Progress |
 | 3 | Time-based Rotation | 0/5 | Planned |
 | 4 | Async Compression | 0/5 | Planned |
 | 5 | Retention Cleanup | 0/5 | Planned |
