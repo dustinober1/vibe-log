@@ -51,6 +51,9 @@ let currentConfig: InternalConfig = { ...defaultConfig };
  * // Use file shorthand
  * configure({ file: './app.log' });
  *
+ * // Use file shorthand with rotation
+ * configure({ file: './app.log', rotation: { maxSize: '100MB' } });
+ *
  * // Configure explicit transports
  * configure({ transports: [new FileTransport('./app.log')] });
  * ```
@@ -58,7 +61,20 @@ let currentConfig: InternalConfig = { ...defaultConfig };
 export function configure(config: Partial<LoggerConfig>): LoggerConfig {
     // File shorthand: convert file string to FileTransport
     if (config.file && !config.transports) {
-        const fileTransport = new FileTransport(config.file);
+        const { file, rotation } = config;
+
+        // Build FileTransport options if rotation config provided
+        const fileTransportOptions: { maxSize?: string | number } = {};
+
+        if (rotation?.maxSize) {
+            fileTransportOptions.maxSize = rotation.maxSize;
+        }
+
+        // Only pass options if rotation config was provided
+        const fileTransport = new FileTransport(
+            file,
+            Object.keys(fileTransportOptions).length > 0 ? fileTransportOptions : undefined
+        );
         config.transports = [fileTransport];
     }
 
