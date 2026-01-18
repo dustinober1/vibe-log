@@ -1,5 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { configure, getConfig, resetConfig } from '../src/config';
+import { log } from '../src/logger';
+import fs from 'fs';
+import path from 'path';
 
 describe('config', () => {
     beforeEach(() => {
@@ -119,6 +122,107 @@ describe('config', () => {
         it('should support maxDepth configuration', () => {
             configure({ maxDepth: 15 });
             expect(getConfig().maxDepth).toBe(15);
+        });
+    });
+
+    describe('rotation configuration', () => {
+        const testLogsDir = './test-logs-config-rotation';
+
+        afterEach(() => {
+            // Clean up test log directory
+            try {
+                if (fs.existsSync(testLogsDir)) {
+                    fs.rmSync(testLogsDir, { recursive: true, force: true });
+                }
+            } catch (error) {
+                // Ignore cleanup errors
+            }
+            // Reset config after each test
+            resetConfig();
+        });
+
+        it('should configure daily rotation pattern', () => {
+            configure({
+                file: path.join(testLogsDir, 'config-daily.log'),
+                rotation: { pattern: 'daily' }
+            });
+
+            const config = getConfig();
+            expect(config.file).toBe(path.join(testLogsDir, 'config-daily.log'));
+            expect(config.rotation?.pattern).toBe('daily');
+        });
+
+        it('should configure hybrid rotation with pattern and maxSize', () => {
+            configure({
+                file: path.join(testLogsDir, 'config-hybrid.log'),
+                rotation: {
+                    pattern: 'daily',
+                    maxSize: '50MB'
+                }
+            });
+
+            const config = getConfig();
+            expect(config.rotation?.pattern).toBe('daily');
+            expect(config.rotation?.maxSize).toBe('50MB');
+        });
+
+        it('should continue to support maxSize-only rotation config', () => {
+            configure({
+                file: path.join(testLogsDir, 'config-size.log'),
+                rotation: { maxSize: '100MB' }
+            });
+
+            const config = getConfig();
+            expect(config.rotation?.maxSize).toBe('100MB');
+            expect(config.rotation?.pattern).toBeUndefined();
+        });
+
+        it('should create file transport without rotation when not configured', () => {
+            configure({
+                file: path.join(testLogsDir, 'config-no-rotation.log')
+            });
+
+            const config = getConfig();
+            expect(config.file).toBe(path.join(testLogsDir, 'config-no-rotation.log'));
+            expect(config.rotation).toBeUndefined();
+        });
+
+        it('should create FileTransport with daily pattern and log successfully', () => {
+            configure({
+                file: path.join(testLogsDir, 'daily-pattern.log'),
+                rotation: { pattern: 'daily' }
+            });
+
+            expect(() => log.info('test', 'Test message with daily pattern')).not.toThrow();
+        });
+
+        it('should create FileTransport with hybrid rotation and log successfully', () => {
+            configure({
+                file: path.join(testLogsDir, 'hybrid-rotation.log'),
+                rotation: {
+                    pattern: 'daily',
+                    maxSize: '10KB'
+                }
+            });
+
+            expect(() => log.info('test', 'Test message with hybrid rotation')).not.toThrow();
+        });
+
+        it('should maintain backward compatibility with maxSize-only rotation', () => {
+            configure({
+                file: path.join(testLogsDir, 'size-only.log'),
+                rotation: { maxSize: '10KB' }
+            });
+
+            expect(() => log.info('test', 'Test message with size-only rotation')).not.toThrow();
+        });
+
+        it('should work without any rotation config', () => {
+            configure({
+                file: path.join(testLogsDir, 'no-rotation.log')
+            });
+
+            expect(() => log.info('test', 'Test message without rotation')).not.toThrow();
         });
     });
 });
