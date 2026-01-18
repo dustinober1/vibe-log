@@ -71,10 +71,15 @@ export function configure(config: Partial<LoggerConfig>): LoggerConfig {
     // Handle console flag
     if (config.console !== undefined) {
         currentConfig.console = config.console;
+        // Rebuild default transports if no explicit transports were set
+        // This ensures console: false clears the default ConsoleTransport
+        if (!config.transports && !config.file) {
+            buildDefaultTransports();
+        }
     }
 
-    // Merge all other config fields
-    const { file, transports, console: _console, ...otherConfig } = config;
+    // Merge all other config fields (including file)
+    const { transports, console: _console, ...otherConfig } = config;
     currentConfig = { ...currentConfig, ...otherConfig };
 
     // Build default transports if none set
