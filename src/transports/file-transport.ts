@@ -144,6 +144,8 @@ export class FileTransport implements Transport {
     private readonly maxSize?: number;
     // @ts-expect-error - Intentionally unused, stored for Phase 2 rotation implementation
     private readonly rotationEnabled: boolean;
+    private rotating = false;              // Write gate flag
+    private rotationInProgress?: Promise<void>;  // Track rotation promise
 
     /**
      * Create a new file transport
