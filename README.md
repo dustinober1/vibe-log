@@ -326,6 +326,77 @@ const transport = new FileTransport('./logs/app.log', {
 configure({ transports: [transport] });
 ```
 
+### Migration Guide
+
+**Adding daily rotation to existing size-based config:**
+
+Before:
+```typescript
+configure({
+    file: './logs/app.log',
+    rotation: {
+        maxSize: '100MB'
+    }
+});
+```
+
+After (with daily rotation):
+```typescript
+configure({
+    file: './logs/app.log',
+    rotation: {
+        maxSize: '100MB',
+        pattern: 'daily'  // Add daily rotation
+    }
+});
+```
+
+**Adding time-based rotation to file logging:**
+
+Before (no rotation):
+```typescript
+configure({ file: './app.log' });
+```
+
+After (daily rotation):
+```typescript
+configure({
+    file: './app.log',
+    rotation: {
+        pattern: 'daily'
+    }
+});
+```
+
+**Migrating from size-only to hybrid rotation:**
+
+Before (size-based only):
+```typescript
+configure({
+    file: './logs/app.log',
+    rotation: {
+        maxSize: '50MB'
+    }
+});
+```
+
+After (hybrid rotation):
+```typescript
+configure({
+    file: './logs/app.log',
+    rotation: {
+        maxSize: '50MB',    // Rotate at 50MB
+        pattern: 'daily'    // Also rotate at midnight
+    }
+});
+```
+
+**Benefits of hybrid rotation:**
+- Ensures regular log rotation (daily) even for low-traffic applications
+- Prevents excessively large files during high-traffic periods
+- Provides predictable log file management
+- Maintains backward compatibility with existing size-based configs
+
 ### How It Works
 
 1. **Size Check**: After each log write, the file size is checked
