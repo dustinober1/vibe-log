@@ -526,6 +526,111 @@ Example failed file location:
 
 ---
 
+## Log Retention
+
+log-vibe supports automatic cleanup of old log files based on retention policy.
+Retention cleanup runs after each rotation, ensuring your log directory doesn't grow indefinitely.
+
+### Retention Policy
+
+Cleanup uses **AND logic** - both conditions must be met before a file is deleted:
+
+- **maxFiles**: Maximum number of log files to keep (including current active file)
+- **maxAge**: Maximum age of log files in days
+
+A file is deleted **ONLY IF**:
+1. It exceeds the maxFiles limit (too many files), AND
+2. It exceeds the maxAge threshold (too old)
+
+This conservative approach prevents accidental data loss.
+
+**Example:** With `maxFiles: 20` and `maxAge: 30`:
+- Files newer than 30 days are kept (even if you have 100 files)
+- Files older than 30 days are kept (if you have fewer than 20 files)
+- Files older than 30 days AND beyond the 20-file limit are deleted
+
+Default values (production-safe):
+- `maxFiles: 20` - Keep maximum 20 log files
+- `maxAge: 30` - Delete files older than 30 days
+
+### Configuration
+
+Enable retention cleanup by setting **both** `maxFiles` and `maxAge` in rotation config:
+
+```typescript
+import { configure } from 'log-vibe';
+
+// Default retention (20 files, 30 days)
+configure({
+  file: './logs/app.log',
+  rotation: {
+    maxSize: '100MB',
+    maxFiles: 20,   // Keep max 20 files
+    maxAge: 30      // Delete files older than 30 days
+  }
+});
+
+// Custom retention
+configure({
+  file: './logs/app.log',
+  rotation: {
+    maxSize: '100MB',
+    maxFiles: 50,   // Keep max 50 files
+    maxAge: 60      // Delete files older than 60 days
+  }
+});
+
+// Combined with rotation and compression
+configure({
+  file: './logs/app.log',
+  rotation: {
+    pattern: 'daily',           // Rotate daily
+    compressionLevel: 6,        // Compress rotated files
+    maxFiles: 20,               // Keep max 20 files
+    maxAge: 30                  // Delete files older than 30 days
+  }
+});
+```
+
+**Important:** Both `maxFiles` and `maxAge` must be specified together. Specifying only one will throw an error.
+
+### How It Works
+
+1. **Rotation**: Log file rotates when size threshold exceeded or daily at midnight UTC
+2. **Compression**: (Optional) Rotated file compressed after 10ms delay
+3. **Cleanup**: Retention cleanup runs 20ms after rotation (10ms compression + 10ms buffer)
+4. **Selection**: Oldest files are checked first (sorted by filename date)
+5. **Deletion**: File deleted only if BOTH maxFiles AND maxAge thresholds exceeded
+6. **Fire-and-forget**: Cleanup runs asynchronously without blocking the `log()` method
+
+### File Selection
+
+Files are selected for deletion based on:
+
+1. **Age**: Calculated from filename date (YYYY-MM-DD format)
+2. **Position**: Oldest files checked first (sorted by date)
+3. **Safety**: Current active file is never deleted
+
+Both compressed (`.gz`) and uncompressed files are included in cleanup.
+
+### Error Handling
+
+If cleanup fails (locked files, permissions, etc.):
+
+- Error logged to console: `[FileTransport] Failed to delete {file}: {error}`
+- Error event emitted on stream (non-fatal)
+- Application continues logging (no crash)
+- Best-effort deletion continues with remaining files
+
+### Benefits
+
+- **Disk management**: Automatic cleanup prevents disk exhaustion
+- **Safe defaults**: Conservative AND logic prevents accidental data loss
+- **Flexible**: Configure thresholds based on your storage and compliance needs
+- **Non-blocking**: Asynchronous cleanup doesn't impact logging performance
+
+---
+
 ## API
 
 ### Log Levels
@@ -624,13 +729,16 @@ The `rotation` option accepts an object with the following fields:
 | `maxSize` | `string \| number` | `'100MB'` | Maximum file size before rotation (e.g., `'100MB'`, `'1.5GB'`, or bytes as number) |
 | `pattern` | `'daily'` | `undefined` | Time-based rotation pattern. Set to `'daily'` to rotate at midnight UTC |
 | `compressionLevel` | `number` | `undefined` | Gzip compression level for rotated files (1-9, where 6 is balanced) |
+| `maxFiles` | `number` | `undefined` | Maximum number of log files to keep (must specify with `maxAge`) |
+| `maxAge` | `number` | `undefined` | Maximum age of log files in days (must specify with `maxFiles`) |
 
 **Notes:**
-- All rotation options (`maxSize`, `pattern`, `compressionLevel`) are optional
+- All rotation options (`maxSize`, `pattern`, `compressionLevel`, `maxFiles`, `maxAge`) are optional
 - Rotation occurs when ANY specified condition is met (size, time, or both)
 - Time-based rotation uses UTC timezone for consistency across servers
 - `pattern: 'daily'` enables automatic rotation at midnight UTC
 - `compressionLevel` enables async gzip compression of rotated files (1-9, default 6)
+- `maxFiles` and `maxAge` must be specified together for retention cleanup (AND logic)
 
 ---
 
