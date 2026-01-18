@@ -12,6 +12,7 @@ import type { LogEntry, LoggerConfig } from '../types';
 export class FileTransport implements Transport {
     private stream: fs.WriteStream;
     private readonly filePath: string;
+    private closed = false;
 
     /**
      * Create a new file transport
@@ -86,6 +87,14 @@ export class FileTransport implements Transport {
      */
     close(): Promise<void> {
         return new Promise((resolve, reject) => {
+            // Already closed - resolve immediately
+            if (this.closed) {
+                resolve();
+                return;
+            }
+
+            this.closed = true;
+
             // Remove error handler to avoid "Possible EventEmitter memory leak" warning
             this.stream.removeAllListeners('error');
 
