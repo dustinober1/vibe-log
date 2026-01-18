@@ -67,10 +67,14 @@ export function configure(config: Partial<LoggerConfig>): LoggerConfig {
         const { file, rotation } = config;
 
         // Build FileTransport options if rotation config provided
-        const fileTransportOptions: { maxSize?: string | number } = {};
+        const fileTransportOptions: { maxSize?: string | number; pattern?: 'daily' } = {};
 
         if (rotation?.maxSize) {
             fileTransportOptions.maxSize = rotation.maxSize;
+        }
+
+        if (rotation?.pattern) {
+            fileTransportOptions.pattern = rotation.pattern;
         }
 
         // Only pass options if rotation config was provided
