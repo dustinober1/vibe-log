@@ -139,10 +139,7 @@ export class FileTransport implements Transport {
     private stream: fs.WriteStream;
     private readonly filePath: string;
     private closed = false;
-    // Rotation config stored for future implementation in Phase 2
-    // @ts-expect-error - Intentionally unused, stored for Phase 2 rotation implementation
     private readonly maxSize?: number;
-    // @ts-expect-error - Intentionally unused, stored for Phase 2 rotation implementation
     private readonly rotationEnabled: boolean;
     private rotating = false;              // Write gate flag
     private rotationInProgress?: Promise<void>;  // Track rotation promise
@@ -210,15 +207,36 @@ export class FileTransport implements Transport {
      * @param config - Logger config (not used in file transport)
      *
      * @remarks
-     * This method is synchronous. The stream handles backpressure internally.
-     * For high-volume logging, consider backpressure handling in Phase 2.
+     * Write gating: If rotation is in progress, skip this write to prevent
+     * data loss during rotation. The rotation is atomic and will complete
+     * before new writes are accepted.
+     *
+     * Size checking: Before writing, check if file size + this write will
+     * exceed maxSize. If so, trigger rotation (fire-and-forget async).
+     *
+     * This method remains synchronous. Rotation happens asynchronously.
      */
     log(formatted: string, _entry: LogEntry, _config: LoggerConfig): void {
+        // Write gating: skip writes during rotation
+        if (this.rotating) {
+            return;
+        }
+
+        const bytesAboutToWrite = formatted.length + 1; // +1 for newline
+
         try {
             this.stream.write(formatted + '\n');
         } catch (error) {
             // Swallow errors - stream error handler will log to console
             // This prevents logging failures from crashing the application
+        }
+
+        // Check size and potentially trigger rotation (fire-and-forget)
+        if (this.rotationEnabled) {
+            // Async call without await — don't block log() method
+            this.checkSizeAndRotate(bytesAboutToWrite).catch((err) => {
+                console.error(`[FileTransport] Rotation error: ${err instanceof Error ? err.message : String(err)}`);
+            });
         }
     }
 
@@ -270,7 +288,6 @@ export class FileTransport implements Transport {
      * @throws {Error} If stream close fails
      * @throws {Error} If file rename fails
      */
-    // @ts-expect-error - Intentionally unused, stored for Phase 2 rotation implementation
     private async performRotation(): Promise<void> {
         return new Promise((resolve, reject) => {
             // Step 1: Close current stream (flushes all buffered data)
