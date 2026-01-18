@@ -62,7 +62,7 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 
 **Goal:** Implement size-based rotation with atomic file switching to prevent log data loss.
 
-**Status:** 📋 Planned
+**Status:** 📋 Planned (6 plans ready for execution)
 
 **Dependencies:** Phase 1 (Transport System) complete
 
@@ -82,6 +82,24 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 5. Existing code without rotation config continues working unchanged (backward compatibility)
 
 **Out of Scope:** Time-based rotation (Phase 3), compression (Phase 4), retention (Phase 5)
+
+**Plans:**
+
+| Plan | Wave | Description | Status |
+|------|------|-------------|--------|
+| [02-01-PLAN.md](./phases/02-core-rotation-infrastructure/02-01-PLAN.md) | 1 | Add RotationConfig types and parseSize utility | 📋 Planned |
+| [02-02-PLAN.md](./phases/02-core-rotation-infrastructure/02-02-PLAN.md) | 2 | Create generateRotatedName utility | 📋 Planned |
+| [02-03-PLAN.md](./phases/02-core-rotation-infrastructure/02-03-PLAN.md) | 2 | Implement atomic rotation sequence | 📋 Planned |
+| [02-04-PLAN.md](./phases/02-core-rotation-infrastructure/02-04-PLAN.md) | 3 | Add size checking and write gating | 📋 Planned |
+| [02-05-PLAN.md](./phases/02-core-rotation-infrastructure/02-05-PLAN.md) | 4 | Write rotation tests (TDD) | 📋 Planned |
+| [02-06-PLAN.md](./phases/02-core-rotation-infrastructure/02-06-PLAN.md) | 5 | Integrate API and document rotation | 📋 Planned |
+
+**Wave Structure:**
+- Wave 1: Configuration types and utilities (parallel)
+- Wave 2: Rotation primitives (parallel: filename gen + atomic rotation)
+- Wave 3: Size checking and write gating
+- Wave 4: TDD test suite
+- Wave 5: API integration and documentation
 
 ---
 
@@ -207,7 +225,7 @@ This roadmap tracks the development of log-vibe, a beautiful zero-dependency log
 | Phase             | Milestone | Plans Complete | Status      | Completed  |
 | ----------------- | --------- | -------------- | ----------- | ---------- |
 | 1. Transport System | v1.0      | 4/4            | Complete    | 2026-01-18 |
-| 2. Core Rotation Infrastructure | v1.1 | 0/6 | Not started | - |
+| 2. Core Rotation Infrastructure | v1.1 | 0/6 | Ready to execute | - |
 | 3. Time-based Rotation | v1.1 | 0/5 | Not started | - |
 | 4. Async Compression | v1.1 | 0/5 | Not started | - |
 | 5. Retention Cleanup | v1.1 | 0/5 | Not started | - |
