@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { log, createScope } from '../src/logger';
 import { configure, resetConfig } from '../src/config';
+import type { Transport } from '../src/transports/transport';
 
 describe('log', () => {
     beforeEach(() => {
@@ -117,6 +118,27 @@ describe('log', () => {
             expect(console.log).toHaveBeenCalledTimes(2); // info + success
             expect(console.warn).toHaveBeenCalledTimes(1);
             expect(console.error).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('transport error handling', () => {
+        it('should handle transport errors gracefully', () => {
+            // Create a transport that throws
+            const throwingTransport: Transport = {
+                log: () => {
+                    throw new Error('Transport failed');
+                },
+            };
+
+            configure({ transports: [throwingTransport] });
+
+            // Should not throw despite transport error
+            expect(() => log.info('Test', 'Message')).not.toThrow();
+
+            // Error should be logged to stderr
+            expect(console.error).toHaveBeenCalledWith(
+                expect.stringContaining('[log-vibe] Transport error:')
+            );
         });
     });
 });
